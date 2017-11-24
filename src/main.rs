@@ -14,8 +14,12 @@ fn main() {
     std_logger::init();
 
     let ctx = commands::Context { config: config::Config::new() };
-    let cmd = commands::UpdateCommand {};
+
+    let cmd = commands::CleanCommand {};
     cmd.execute(&ctx).unwrap();
+
+    // let cmd = commands::UpdateCommand {};
+    // cmd.execute(&ctx).unwrap();
 
     // let crawler = fscrawling::FileSystemCrawler {
     //     exclude_dirs: vec![Path::new(".git").to_owned()],

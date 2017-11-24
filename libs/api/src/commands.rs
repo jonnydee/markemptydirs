@@ -111,7 +111,6 @@ pub trait ICommand {
 
 
 pub struct UpdateCommand {}
-
 impl ICommand for UpdateCommand {
     fn execute(&self, ctx: &Context) -> Result<()> {
         let descr_list: Vec<_> = ctx.crawl_dirs().into_iter().collect();
@@ -133,6 +132,22 @@ impl ICommand for UpdateCommand {
                 ctx.create_marker_catched(&dir);
             },
         );
+
+        Ok(())
+    }
+}
+
+pub struct CleanCommand {}
+impl ICommand for CleanCommand {
+    fn execute(&self, ctx: &Context) -> Result<()> {
+        let descr_list: Vec<_> = ctx.crawl_dirs().into_iter().collect();
+
+        // Delete all markers.
+        descr_list.par_iter().for_each(|&(ref dir, ref descr)| {
+            if descr.get_marker_direntry().is_some() {
+                ctx.delete_marker_catched(&dir);
+            }
+        });
 
         Ok(())
     }
