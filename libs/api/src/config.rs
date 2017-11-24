@@ -1,6 +1,6 @@
 use log::LogLevel;
 use std::fmt;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 
 pub type PathList = Vec<PathBuf>;
@@ -54,7 +54,7 @@ pub enum Command {
 
 #[derive(Debug)]
 pub struct Config {
-    pub application_info: ApplicationInfo,
+    // pub application_info: ApplicationInfo,
     pub command: Command,
     pub create_hook_command: String,
     pub delete_hook_command: String,
@@ -71,21 +71,22 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(application_info: ApplicationInfo) -> Config {
+    pub fn new() -> Config {
+        // pub fn new(application_info: ApplicationInfo) -> Config {
         Config {
-            application_info: application_info,
+            // application_info: application_info,
             command: Command::None,
             create_hook_command: "".to_string(),
             delete_hook_command: "".to_string(),
             dry_run: false,
-            exclude_dirs: vec![],
+            exclude_dirs: vec![Path::new(".git").to_owned()],
             executable_file: "".to_string(),
             help_text: "".to_string(),
             log_level: LogLevel::Error,
             marker_name: ".emptydir".to_string(),
             marker_text: "".to_string(),
             dereference_symlinks: false,
-            root_dirs: vec![],
+            root_dirs: vec![Path::new(".").to_owned()],
             substitute_variables: true,
         }
     }

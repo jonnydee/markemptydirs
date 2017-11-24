@@ -35,6 +35,15 @@ impl DirDescriptor {
             .for_each(f)
     }
 
+    pub fn get_child_count(&self) -> usize {
+        let mut count = self.children.len();
+        if self.marker_file_child_index.is_some() {
+            assert!(count > 0);
+            count -= 1;
+        }
+        count
+    }
+
     pub fn get_sub_direntry_count(&self) -> usize {
         self.subdir_child_indexes.len()
     }
@@ -45,8 +54,13 @@ impl DirDescriptor {
             .map(|index| &self.children[*index])
             .collect()
     }
+
+    pub fn has_children(&self) -> bool {
+        self.get_child_count() > 0
+    }
 }
 
+pub type DirDescriptorList = Vec<(PathBuf, DirDescriptor)>;
 pub type DirDescriptorMap = HashMap<PathBuf, DirDescriptor>;
 
 #[derive(Debug)]
