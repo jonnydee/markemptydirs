@@ -1,11 +1,13 @@
 use config;
 use fscrawling;
+use pathdiff::diff_paths;
 use rayon::prelude::*;
 use std;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+// use text_table::Table;
 
 
 quick_error! {
@@ -101,6 +103,25 @@ impl Context {
         Ok(abs_dir)
     }
 
+    pub fn get_relative_dir(dir: &PathBuf, base_dir: &PathBuf) -> Option<PathBuf> {
+        diff_paths(dir, base_dir)
+    }
+
+    pub fn get_relative_dir_to_current_dir(dir: &PathBuf) -> std::io::Result<Option<PathBuf>> {
+        let cur_dir = std::env::current_dir()?;
+        match Context::get_relative_dir(dir, &cur_dir) {
+            Some(dir) => {
+                let rel_dir = Path::new(".");
+                if dir.iter().next().is_some() {
+                    Ok(Some(rel_dir.join(dir)))
+                } else {
+                    Ok(Some(rel_dir.to_owned()))
+                }
+            }
+            None => Ok(None),
+        }
+    }
+
     pub fn get_root_dir(&self, dir: &PathBuf) -> std::io::Result<Option<&PathBuf>> {
         let dir = Context::get_absolute_dir(dir)?;
         Ok(self.config.root_dirs.iter().find(|root_dir| {
@@ -152,6 +173,58 @@ impl ICommand for CleanCommand {
                 ctx.delete_marker_catched(&descr.dir);
             },
         );
+
+        Ok(())
+    }
+}
+
+pub struct OverviewCommand {}
+#[derive(Debug)]
+struct OverviewStatistics {
+    pub dir: PathBuf,
+    pub marker_found: bool,
+    pub marker_required: bool,
+    pub child_count: usize,
+    pub dir_count: usize,
+}
+
+impl ICommand for OverviewCommand {
+    fn execute(&self, ctx: &Context) -> Result<()> {
+        let mut statistics_list: Vec<_> = ctx.crawl_dirs()
+            .into_par_iter()
+            .map(|descr| {
+                OverviewStatistics {
+                    marker_found: descr.has_marker(),
+                    marker_required: !descr.has_children(),
+                    child_count: descr.get_child_count(),
+                    dir_count: descr.get_sub_directory_count(),
+                    dir: match Context::get_relative_dir_to_current_dir(&descr.dir) {
+                        Ok(Some(dir)) => dir,
+                        _ => descr.dir,
+                    },
+                }
+            })
+            .collect();
+
+        statistics_list.as_mut_slice().par_sort_unstable_by_key(
+            |stat| stat.dir.clone(),
+        );
+
+        for stat in statistics_list {
+            println!("{:?}", stat);
+        }
+        // let mut table = Table::new();
+        // table.row(("Path", "M. found?", "M. needed!", "Entries", "Dirs"))
+        //     .sep();
+        // for stat in statistics_list {
+        //     table.row((
+        //         format!("{}", stat),
+        //         print!("{}", if stat.marker_found { "yes" } else { "no" }),
+        //         print!("{}", if stat.marker_required { "yes" } else { "no" }),
+        //         stat.child_count,
+        //         stat.dir_count);
+
+        // println!("{}", table.write_to_string());
 
         Ok(())
     }

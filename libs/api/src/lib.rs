@@ -1,14 +1,21 @@
+extern crate handlebars;
+
 #[macro_use]
 extern crate log;
+
+extern crate pathdiff;
 
 #[macro_use]
 extern crate quick_error;
 
 extern crate rayon;
 
+// extern crate text_table;
+
 pub mod commands;
 pub mod config;
 pub mod fscrawling;
+
 
 #[cfg(test)]
 mod tests {

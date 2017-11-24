@@ -17,14 +17,6 @@ pub struct DirDescriptor {
 }
 
 impl DirDescriptor {
-    pub fn get_marker_direntry(&self) -> Option<&DirEntry> {
-        if let Some(index) = self.marker_file_child_index {
-            Some(&self.children[index])
-        } else {
-            None
-        }
-    }
-
     pub fn for_each_sub_direntry<F>(&self, f: F)
     where
         F: FnMut(&DirEntry) -> (),
@@ -44,6 +36,14 @@ impl DirDescriptor {
         count
     }
 
+    pub fn get_marker_direntry(&self) -> Option<&DirEntry> {
+        if let Some(index) = self.marker_file_child_index {
+            Some(&self.children[index])
+        } else {
+            None
+        }
+    }
+
     pub fn get_sub_direntry_count(&self) -> usize {
         self.subdir_child_indexes.len()
     }
@@ -53,6 +53,10 @@ impl DirDescriptor {
             .iter()
             .map(|index| &self.children[*index])
             .collect()
+    }
+
+    pub fn get_sub_directory_count(&self) -> usize {
+        self.subdir_child_indexes.len()
     }
 
     pub fn has_children(&self) -> bool {
