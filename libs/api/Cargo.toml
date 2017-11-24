@@ -1,0 +1,9 @@
+[package]
+name = "api"
+version = "0.1.0"
+authors = ["Jonny Dee <jonny.dee@gmx.net>"]
+
+[dependencies]
+log = "*"
+quick-error = "*"
+rayon = "*"

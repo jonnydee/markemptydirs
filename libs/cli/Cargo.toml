@@ -1,0 +1,9 @@
+[package]
+name = "cli"
+version = "0.1.0"
+authors = ["Jonny Dee <jonny.dee@gmx.net>"]
+
+[dependencies.api]
+path = "../api"
+
+[dependencies]
