@@ -35,14 +35,18 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn crawl_dirs(&self) -> fscrawling::DirDescriptorMap {
+    pub fn crawl_dirs(&self) -> fscrawling::DirDescriptorList {
         let crawler = fscrawling::FileSystemCrawler {
             exclude_dirs: self.config.exclude_dirs.clone(),
             dereference_symlinks: self.config.dereference_symlinks,
             marker_name: self.config.marker_name.clone(),
         };
 
-        crawler.crawl_dirs(self.config.root_dirs.clone())
+        crawler
+            .crawl_dirs(self.config.root_dirs.clone())
+            .into_iter()
+            .map(|(_, descr)| descr)
+            .collect()
     }
 
     pub fn create_marker(&self, dir: &PathBuf) -> std::io::Result<()> {
@@ -113,23 +117,23 @@ pub trait ICommand {
 pub struct UpdateCommand {}
 impl ICommand for UpdateCommand {
     fn execute(&self, ctx: &Context) -> Result<()> {
-        let descr_list: Vec<_> = ctx.crawl_dirs().into_iter().collect();
+        let descr_list = ctx.crawl_dirs();
 
         // Delete markers.
         descr_list.par_iter().for_each(
-            |&(ref dir, ref descr)| if descr.get_marker_direntry().is_some() &&
+            |descr| if descr.has_marker() &&
                 descr.has_children()
             {
-                ctx.delete_marker_catched(&dir);
+                ctx.delete_marker_catched(&descr.dir);
             },
         );
 
         // Create markers.
         descr_list.par_iter().for_each(
-            |&(ref dir, ref descr)| if descr.get_marker_direntry().is_none() &&
+            |descr| if !descr.has_marker() &&
                 !descr.has_children()
             {
-                ctx.create_marker_catched(&dir);
+                ctx.create_marker_catched(&descr.dir);
             },
         );
 
@@ -140,14 +144,14 @@ impl ICommand for UpdateCommand {
 pub struct CleanCommand {}
 impl ICommand for CleanCommand {
     fn execute(&self, ctx: &Context) -> Result<()> {
-        let descr_list: Vec<_> = ctx.crawl_dirs().into_iter().collect();
+        let descr_list = ctx.crawl_dirs();
 
         // Delete all markers.
-        descr_list.par_iter().for_each(|&(ref dir, ref descr)| {
-            if descr.get_marker_direntry().is_some() {
-                ctx.delete_marker_catched(&dir);
-            }
-        });
+        descr_list.par_iter().for_each(
+            |descr| if descr.has_marker() {
+                ctx.delete_marker_catched(&descr.dir);
+            },
+        );
 
         Ok(())
     }
