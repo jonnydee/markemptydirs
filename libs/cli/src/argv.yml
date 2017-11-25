@@ -25,47 +25,6 @@ args:
         long: deref-symlinks
         short: L
 subcommands:
-    - list:
-        about: List markers 'clashing' with non-empty directories,
-               'correct' markers residing in otherwise empty directories,
-               and markers 'missing' in empty directories.
-        args:
-            - root-dirs:
-                help: Directory to start from
-                value_name: DIR
-                multiple: true
-            - filter:
-                help: Filters the set of markers listed
-                long: filter
-                value_name: SPEC
-                takes_value: true
-                multiple: true
-                value_delimiter: ","
-                possible_values:
-                    - clashing
-                    - correct
-                    - missing
-    - update:
-        about: Update markers in directory tree
-        args:
-            - create-hook:
-                help: Command to execute when marker is created
-                long: create-hook
-                takes_value: true
-            - delete-hook:
-                help: Command to execute when marker is deleted
-                long: delete-hook
-                takes_value: true
-            - substitute-variables:
-                help: Substitute variables
-                long: subst-vars
-            - dry-run:
-                help: Dry run
-                long: dry-run
-            - root-dirs:
-                help: Directory to start from
-                value_name: DIR
-                multiple: true
     - clean:
         about: Delete all markers in directory tree
         args:
@@ -80,9 +39,55 @@ subcommands:
                 help: Directory to start from
                 value_name: DIR
                 multiple: true
+    - list:
+        about: List markers 'clashing' with non-empty directories,
+               'correct' markers residing in otherwise empty directories,
+               and markers 'missing' in empty directories.
+        args:
+            - filter:
+                help: Filters the set of markers listed
+                long: filter
+                value_name: SPEC
+                takes_value: true
+                multiple: true
+                value_delimiter: ","
+                possible_values:
+                    - clashing
+                    - correct
+                    - missing
+            - root-dirs:
+                help: Directory to start from
+                value_name: DIR
+                multiple: true
     - purge:
         about: Delete everything in directories containing markers
         args:
+            - dry-run:
+                help: Dry run
+                long: dry-run
+            - root-dirs:
+                help: Directory to start from
+                value_name: DIR
+                multiple: true
+    - update:
+        about: Update markers in directory tree
+        args:
+            - create-hook:
+                help: Command to execute when marker is created
+                long: create-hook
+                takes_value: true
+            - delete-hook:
+                help: Command to execute when marker is deleted
+                long: delete-hook
+                takes_value: true
+            - marker-text:
+                help: Text to be written into created marker files
+                long: marker-text
+                value_name: TEXT
+                takes_value: true
+            - substitute-variables:
+                help: Substitute variables
+                long: subst-vars
             - dry-run:
                 help: Dry run
                 long: dry-run

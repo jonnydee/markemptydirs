@@ -7,6 +7,7 @@ use api::commands;
 use api::commands::*;
 use api::config;
 use cli::argv;
+use std::path::Path;
 
 
 fn main() {
@@ -15,7 +16,9 @@ fn main() {
     let config = argv::parse_config();
     println!("{:?}", config);
 
-    let ctx = commands::Context { config: config::Config::new() };
+    let ctx = commands::Context {
+        config: config::Config::new(),
+    };
 
     // let cmd = commands::CleanCommand {};
     // cmd.execute(&ctx).unwrap();
@@ -23,6 +26,9 @@ fn main() {
     // let cmd = commands::UpdateCommand {};
     // cmd.execute(&ctx).unwrap();
 
-    let cmd = commands::OverviewCommand {};
+    let cmd = commands::List {
+        filter: vec![],
+        root_dirs: vec![Path::new(".").to_owned()],
+    };
     cmd.execute(&ctx).unwrap();
 }

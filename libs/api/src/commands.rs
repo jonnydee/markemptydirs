@@ -10,6 +10,9 @@ use std::path::{Path, PathBuf};
 // use text_table::Table;
 
 
+pub type PathList = Vec<PathBuf>;
+
+
 quick_error! {
     #[derive(Debug)]
     pub enum Error {
@@ -37,7 +40,7 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn crawl_dirs(&self) -> fscrawling::DirDescriptorList {
+    pub fn crawl_dirs(&self, root_dirs: &PathList) -> fscrawling::DirDescriptorList {
         let crawler = fscrawling::FileSystemCrawler {
             exclude_dirs: self.config.exclude_dirs.clone(),
             dereference_symlinks: self.config.dereference_symlinks,
@@ -45,13 +48,13 @@ impl Context {
         };
 
         crawler
-            .crawl_dirs(self.config.root_dirs.clone())
+            .crawl_dirs(root_dirs.clone())
             .into_iter()
             .map(|(_, descr)| descr)
             .collect()
     }
 
-    pub fn create_marker(&self, dir: &PathBuf) -> std::io::Result<()> {
+    pub fn create_marker(&self, dir: &PathBuf, text: &String) -> std::io::Result<()> {
         let marker_file_path = {
             let mut dir = Context::get_absolute_dir(dir)?;
             dir.push(&self.config.marker_name);
@@ -61,15 +64,15 @@ impl Context {
         // Write marker to disk.
         {
             let mut file = File::create(&marker_file_path)?;
-            file.write_all(self.config.marker_text.as_bytes())?;
+            file.write_all(text.as_bytes())?;
         }
 
         info!(target: "create_marker", "Marker created: {:?}", &marker_file_path);
         Ok(())
     }
 
-    pub fn create_marker_catched(&self, dir: &PathBuf) {
-        if let Err(error) = self.create_marker(&dir) {
+    pub fn create_marker_catched(&self, dir: &PathBuf, text: &String) {
+        if let Err(error) = self.create_marker(dir, text) {
             error!(target: "create_marker", "{}: {:?}", error, &dir);
         }
     }
@@ -122,11 +125,13 @@ impl Context {
         }
     }
 
-    pub fn get_root_dir(&self, dir: &PathBuf) -> std::io::Result<Option<&PathBuf>> {
+    pub fn get_root_dir<'a>(
+        &self,
+        dir: &PathBuf,
+        root_dirs: &'a PathList,
+    ) -> std::io::Result<Option<&'a PathBuf>> {
         let dir = Context::get_absolute_dir(dir)?;
-        Ok(self.config.root_dirs.iter().find(|root_dir| {
-            dir.starts_with(root_dir)
-        }))
+        Ok(root_dirs.iter().find(|root_dir| dir.starts_with(root_dir)))
     }
 }
 
@@ -135,52 +140,41 @@ pub trait ICommand {
 }
 
 
-pub struct UpdateCommand {}
-impl ICommand for UpdateCommand {
-    fn execute(&self, ctx: &Context) -> Result<()> {
-        let descr_list = ctx.crawl_dirs();
-
-        // Delete markers.
-        descr_list.par_iter().for_each(
-            |descr| if descr.has_marker() &&
-                descr.has_children()
-            {
-                ctx.delete_marker_catched(&descr.dir);
-            },
-        );
-
-        // Create markers.
-        descr_list.par_iter().for_each(
-            |descr| if !descr.has_marker() &&
-                !descr.has_children()
-            {
-                ctx.create_marker_catched(&descr.dir);
-            },
-        );
-
-        Ok(())
-    }
+pub struct CleanCommand {
+    pub delete_hook: String,
+    pub dry_run: bool,
+    pub root_dirs: PathList,
 }
-
-pub struct CleanCommand {}
 impl ICommand for CleanCommand {
     fn execute(&self, ctx: &Context) -> Result<()> {
-        let descr_list = ctx.crawl_dirs();
+        let descr_list = ctx.crawl_dirs(&self.root_dirs);
 
         // Delete all markers.
-        descr_list.par_iter().for_each(
-            |descr| if descr.has_marker() {
+        descr_list.par_iter().for_each(|descr| {
+            if descr.has_marker() {
                 ctx.delete_marker_catched(&descr.dir);
-            },
-        );
+            }
+        });
 
         Ok(())
     }
 }
 
-pub struct OverviewCommand {}
+
+#[derive(PartialEq, Debug)]
+pub enum ListFilter {
+    Clashing,
+    Correct,
+    Missing,
+}
+
+pub struct List {
+    pub filter: Vec<ListFilter>,
+    pub root_dirs: PathList,
+}
+
 #[derive(Debug)]
-struct OverviewStatistics {
+struct ListStatistics {
     pub dir: PathBuf,
     pub marker_found: bool,
     pub marker_required: bool,
@@ -188,12 +182,12 @@ struct OverviewStatistics {
     pub dir_count: usize,
 }
 
-impl ICommand for OverviewCommand {
+impl ICommand for List {
     fn execute(&self, ctx: &Context) -> Result<()> {
-        let mut statistics_list: Vec<_> = ctx.crawl_dirs()
+        let mut statistics_list: Vec<_> = ctx.crawl_dirs(&self.root_dirs)
             .into_par_iter()
             .map(|descr| {
-                OverviewStatistics {
+                ListStatistics {
                     marker_found: descr.has_marker(),
                     marker_required: !descr.has_children(),
                     child_count: descr.get_child_count(),
@@ -206,9 +200,9 @@ impl ICommand for OverviewCommand {
             })
             .collect();
 
-        statistics_list.as_mut_slice().par_sort_unstable_by_key(
-            |stat| stat.dir.clone(),
-        );
+        statistics_list
+            .as_mut_slice()
+            .par_sort_unstable_by_key(|stat| stat.dir.clone());
 
         for stat in statistics_list {
             println!("{:?}", stat);
@@ -225,6 +219,43 @@ impl ICommand for OverviewCommand {
         //         stat.dir_count);
 
         // println!("{}", table.write_to_string());
+
+        Ok(())
+    }
+}
+
+
+pub struct Purge {
+    pub dry_run: bool,
+    pub root_dirs: PathList,
+}
+
+
+pub struct Update {
+    pub create_hook: String,
+    pub delete_hook: String,
+    pub dry_run: bool,
+    pub marker_text: String,
+    pub root_dirs: PathList,
+    pub substitute_variables: bool,
+}
+impl ICommand for Update {
+    fn execute(&self, ctx: &Context) -> Result<()> {
+        let descr_list = ctx.crawl_dirs(&self.root_dirs);
+
+        // Delete markers.
+        descr_list.par_iter().for_each(|descr| {
+            if descr.has_marker() && descr.has_children() {
+                ctx.delete_marker_catched(&descr.dir);
+            }
+        });
+
+        // Create markers.
+        descr_list.par_iter().for_each(|descr| {
+            if !descr.has_marker() && !descr.has_children() {
+                ctx.create_marker_catched(&descr.dir, &self.marker_text);
+            }
+        });
 
         Ok(())
     }

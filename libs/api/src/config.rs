@@ -42,32 +42,13 @@ pub struct ApplicationInfo {
 
 
 #[derive(PartialEq, Debug)]
-pub enum Command {
-    None,
-    Help,
-    Update,
-    Clean,
-    Overview,
-    Purge,
-    Version,
-}
-
-#[derive(PartialEq, Debug)]
 pub struct Config {
     // pub application_info: ApplicationInfo,
-    pub command: Command,
-    pub create_hook_command: String,
-    pub delete_hook_command: String,
-    pub dry_run: bool,
     pub exclude_dirs: PathList,
     pub executable_file: String,
-    pub help_text: String,
     pub log_level: LogLevel,
     pub marker_name: String,
-    pub marker_text: String,
     pub dereference_symlinks: bool,
-    pub root_dirs: PathList,
-    pub substitute_variables: bool,
 }
 
 impl Config {
@@ -75,19 +56,41 @@ impl Config {
         // pub fn new(application_info: ApplicationInfo) -> Config {
         Config {
             // application_info: application_info,
-            command: Command::None,
-            create_hook_command: "".to_string(),
-            delete_hook_command: "".to_string(),
-            dry_run: false,
             exclude_dirs: vec![Path::new(".git").to_owned()],
             executable_file: "".to_string(),
-            help_text: "".to_string(),
             log_level: LogLevel::Error,
             marker_name: ".emptydir".to_string(),
-            marker_text: "".to_string(),
             dereference_symlinks: false,
-            root_dirs: vec![Path::new(".").to_owned()],
-            substitute_variables: true,
         }
     }
+}
+
+
+#[derive(PartialEq, Debug)]
+pub enum CommandListFilter {
+    Clashing,
+    Correct,
+    Missing,
+}
+
+#[derive(PartialEq, Debug)]
+pub enum Command {
+    Clean {
+        delete_hook: String,
+        dry_run: bool,
+        root_dirs: PathList,
+    },
+    List {
+        filter: Vec<CommandListFilter>,
+        root_dirs: PathList,
+    },
+    Purge { dry_run: bool, root_dirs: PathList },
+    Update {
+        create_hook: String,
+        delete_hook: String,
+        dry_run: bool,
+        marker_text: String,
+        root_dirs: PathList,
+        substitute_variables: bool,
+    },
 }
