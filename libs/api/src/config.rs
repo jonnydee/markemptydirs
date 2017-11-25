@@ -41,7 +41,7 @@ pub struct ApplicationInfo {
 }
 
 
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub enum Command {
     None,
     Help,
@@ -52,7 +52,7 @@ pub enum Command {
     Version,
 }
 
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub struct Config {
     // pub application_info: ApplicationInfo,
     pub command: Command,

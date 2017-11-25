@@ -7,3 +7,4 @@ authors = ["Jonny Dee <jonny.dee@gmx.net>"]
 path = "../api"
 
 [dependencies]
+clap = {version = "*", features = ["yaml"]}
