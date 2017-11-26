@@ -4,15 +4,13 @@ use api::commands;
 use std::path::Path;
 
 
-pub fn parse_context_and_command() -> Option<(context::Context, Box<commands::ICommand>)> {
+pub fn parse_config_and_command() -> Option<(context::Config, Box<commands::ICommand>)> {
     let yml = load_yaml!("argv.yml");
     let app = App::from_yaml(yml);
     let matches = app.get_matches();
     println!("{:?}", matches);
 
-    let ctx = context::Context {
-        config: context::Config::new(),
-    };
+    let cfg = context::Config::new();
 
     // let cmd = commands::CleanCommand {};
 
@@ -23,5 +21,5 @@ pub fn parse_context_and_command() -> Option<(context::Context, Box<commands::IC
         root_dirs: vec![Path::new(".").to_owned()],
     };
 
-    Some((ctx, Box::new(cmd)))
+    Some((cfg, Box::new(cmd)))
 }
