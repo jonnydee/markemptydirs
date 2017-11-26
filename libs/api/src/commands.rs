@@ -1,12 +1,7 @@
-use config;
-use fscrawling;
-use pathdiff::diff_paths;
+use context;
 use rayon::prelude::*;
 use std;
-use std::fs;
-use std::fs::File;
-use std::io::prelude::*;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 // use text_table::Table;
 
 
@@ -32,121 +27,19 @@ quick_error! {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug)]
-pub struct Context {
-    pub config: config::Config,
-    // base_dir: PathBuf,
-    // current_dir: PathBuf,
-}
-
-impl Context {
-    pub fn crawl_dirs(&self, root_dirs: &PathList) -> fscrawling::DirDescriptorList {
-        let crawler = fscrawling::FileSystemCrawler {
-            exclude_dirs: self.config.exclude_dirs.clone(),
-            dereference_symlinks: self.config.dereference_symlinks,
-            marker_name: self.config.marker_name.clone(),
-        };
-
-        crawler
-            .crawl_dirs(root_dirs.clone())
-            .into_iter()
-            .map(|(_, descr)| descr)
-            .collect()
-    }
-
-    pub fn create_marker(&self, dir: &PathBuf, text: &String) -> std::io::Result<()> {
-        let marker_file_path = {
-            let mut dir = Context::get_absolute_dir(dir)?;
-            dir.push(&self.config.marker_name);
-            dir
-        };
-
-        // Write marker to disk.
-        {
-            let mut file = File::create(&marker_file_path)?;
-            file.write_all(text.as_bytes())?;
-        }
-
-        info!(target: "create_marker", "Marker created: {:?}", &marker_file_path);
-        Ok(())
-    }
-
-    pub fn create_marker_catched(&self, dir: &PathBuf, text: &String) {
-        if let Err(error) = self.create_marker(dir, text) {
-            error!(target: "create_marker", "{}: {:?}", error, &dir);
-        }
-    }
-
-    pub fn delete_marker(&self, dir: &PathBuf) -> std::io::Result<()> {
-        let marker_file_path = {
-            let mut dir = Context::get_absolute_dir(dir)?;
-            dir.push(&self.config.marker_name);
-            dir
-        };
-
-        // Remove marker from disk.
-        fs::remove_file(&marker_file_path)?;
-
-        info!(target: "delete_marker", "Marker deleted: {:?}", &marker_file_path);
-        Ok(())
-    }
-
-    pub fn delete_marker_catched(&self, dir: &PathBuf) {
-        if let Err(error) = self.delete_marker(&dir) {
-            error!(target: "delete_marker", "{}: {:?}", error, &dir);
-        }
-    }
-
-    pub fn get_absolute_dir(dir: &PathBuf) -> std::io::Result<PathBuf> {
-        if dir.is_absolute() {
-            return Ok(dir.clone());
-        }
-        let mut abs_dir = std::env::current_dir()?;
-        abs_dir.push(dir);
-        Ok(abs_dir)
-    }
-
-    pub fn get_relative_dir(dir: &PathBuf, base_dir: &PathBuf) -> Option<PathBuf> {
-        diff_paths(dir, base_dir)
-    }
-
-    pub fn get_relative_dir_to_current_dir(dir: &PathBuf) -> std::io::Result<Option<PathBuf>> {
-        let cur_dir = std::env::current_dir()?;
-        match Context::get_relative_dir(dir, &cur_dir) {
-            Some(dir) => {
-                let rel_dir = Path::new(".");
-                if dir.iter().next().is_some() {
-                    Ok(Some(rel_dir.join(dir)))
-                } else {
-                    Ok(Some(rel_dir.to_owned()))
-                }
-            }
-            None => Ok(None),
-        }
-    }
-
-    pub fn get_root_dir<'a>(
-        &self,
-        dir: &PathBuf,
-        root_dirs: &'a PathList,
-    ) -> std::io::Result<Option<&'a PathBuf>> {
-        let dir = Context::get_absolute_dir(dir)?;
-        Ok(root_dirs.iter().find(|root_dir| dir.starts_with(root_dir)))
-    }
-}
-
 pub trait ICommand {
-    fn execute(&self, ctx: &Context) -> Result<()>;
+    fn execute(&self, ctx: &context::Context) -> Result<()>;
 }
 
 
+#[derive(PartialEq, Debug)]
 pub struct CleanCommand {
     pub delete_hook: String,
     pub dry_run: bool,
     pub root_dirs: PathList,
 }
 impl ICommand for CleanCommand {
-    fn execute(&self, ctx: &Context) -> Result<()> {
+    fn execute(&self, ctx: &context::Context) -> Result<()> {
         let descr_list = ctx.crawl_dirs(&self.root_dirs);
 
         // Delete all markers.
@@ -168,6 +61,7 @@ pub enum ListFilter {
     Missing,
 }
 
+#[derive(PartialEq, Debug)]
 pub struct List {
     pub filter: Vec<ListFilter>,
     pub root_dirs: PathList,
@@ -183,7 +77,7 @@ struct ListStatistics {
 }
 
 impl ICommand for List {
-    fn execute(&self, ctx: &Context) -> Result<()> {
+    fn execute(&self, ctx: &context::Context) -> Result<()> {
         let mut statistics_list: Vec<_> = ctx.crawl_dirs(&self.root_dirs)
             .into_par_iter()
             .map(|descr| {
@@ -192,7 +86,7 @@ impl ICommand for List {
                     marker_required: !descr.has_children(),
                     child_count: descr.get_child_count(),
                     dir_count: descr.get_sub_directory_count(),
-                    dir: match Context::get_relative_dir_to_current_dir(&descr.dir) {
+                    dir: match context::Context::get_relative_dir_to_current_dir(&descr.dir) {
                         Ok(Some(dir)) => dir,
                         _ => descr.dir,
                     },
@@ -225,12 +119,14 @@ impl ICommand for List {
 }
 
 
+#[derive(PartialEq, Debug)]
 pub struct Purge {
     pub dry_run: bool,
     pub root_dirs: PathList,
 }
 
 
+#[derive(PartialEq, Debug)]
 pub struct Update {
     pub create_hook: String,
     pub delete_hook: String,
@@ -240,7 +136,7 @@ pub struct Update {
     pub substitute_variables: bool,
 }
 impl ICommand for Update {
-    fn execute(&self, ctx: &Context) -> Result<()> {
+    fn execute(&self, ctx: &context::Context) -> Result<()> {
         let descr_list = ctx.crawl_dirs(&self.root_dirs);
 
         // Delete markers.

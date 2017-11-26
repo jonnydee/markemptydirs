@@ -13,7 +13,7 @@ extern crate rayon;
 // extern crate text_table;
 
 pub mod commands;
-pub mod config;
+pub mod context;
 pub mod fscrawling;
 
 
