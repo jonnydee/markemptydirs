@@ -1,5 +1,5 @@
 use fscrawling;
-use log::LogLevel;
+use log::Level;
 use pathdiff::diff_paths;
 use std;
 use std::fmt;
@@ -51,7 +51,7 @@ pub struct ApplicationInfo {
 pub struct Config {
     pub exclude_dirs: PathList,
     pub executable_file: String,
-    pub log_level: LogLevel,
+    pub log_level: Level,
     pub marker_name: String,
     pub dereference_symlinks: bool,
 }
@@ -63,7 +63,7 @@ impl Config {
             // application_info: application_info,
             exclude_dirs: vec![Path::new(".git").to_owned()],
             executable_file: "".to_string(),
-            log_level: LogLevel::Error,
+            log_level: Level::Error,
             marker_name: ".emptydir".to_string(),
             dereference_symlinks: false,
         }
