@@ -1,12 +1,11 @@
 use context;
 use rayon::prelude::*;
 use std;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 // use text_table::Table;
 
 
 pub type PathList = Vec<PathBuf>;
-
 
 quick_error! {
     #[derive(Debug)]
@@ -17,6 +16,9 @@ quick_error! {
         }
         Utf8(err: std::str::Utf8Error) {
             description("utf8 error")
+        }
+        Message(str: &'static str) {
+            description("error message")
         }
         Other(err: Box<std::error::Error>) {
             cause(&**err)
@@ -32,13 +34,29 @@ pub trait ICommand {
 }
 
 
+fn default_root_dirs() -> PathList {
+    vec![Path::new(".").to_owned()]
+}
+
+
 #[derive(PartialEq, Debug)]
-pub struct CleanCommand {
+pub struct Clean {
     pub delete_hook: String,
     pub dry_run: bool,
     pub root_dirs: PathList,
 }
-impl ICommand for CleanCommand {
+
+impl Clean {
+    pub fn new() -> Clean {
+        Clean {
+            delete_hook: String::new(),
+            dry_run: false,
+            root_dirs: default_root_dirs(),
+        }
+    }
+}
+
+impl ICommand for Clean {
     fn execute(&self, ctx: &context::Context) -> Result<()> {
         let descr_list = ctx.crawl_dirs(&self.root_dirs);
 
@@ -74,6 +92,15 @@ struct ListStatistics {
     pub marker_required: bool,
     pub child_count: usize,
     pub dir_count: usize,
+}
+
+impl List {
+    pub fn new() -> List {
+        List {
+            filter: vec![],
+            root_dirs: default_root_dirs(),
+        }
+    }
 }
 
 impl ICommand for List {
@@ -125,6 +152,21 @@ pub struct Purge {
     pub root_dirs: PathList,
 }
 
+impl Purge {
+    pub fn new() -> Purge {
+        Purge {
+            dry_run: false,
+            root_dirs: default_root_dirs(),
+        }
+    }
+}
+
+impl ICommand for Purge {
+    fn execute(&self, ctx: &context::Context) -> Result<()> {
+        Err(Error::Message(""))
+    }
+}
+
 
 #[derive(PartialEq, Debug)]
 pub struct Update {
@@ -135,6 +177,20 @@ pub struct Update {
     pub root_dirs: PathList,
     pub substitute_variables: bool,
 }
+
+impl Update {
+    pub fn new() -> Update {
+        Update {
+            create_hook: String::new(),
+            delete_hook: String::new(),
+            dry_run: false,
+            marker_text: String::new(),
+            root_dirs: default_root_dirs(),
+            substitute_variables: true,
+        }
+    }
+}
+
 impl ICommand for Update {
     fn execute(&self, ctx: &context::Context) -> Result<()> {
         let descr_list = ctx.crawl_dirs(&self.root_dirs);

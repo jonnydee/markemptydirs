@@ -16,6 +16,7 @@ pub mod commands;
 pub mod context;
 pub mod fscrawling;
 
+pub use log::Level as LogLevel;
 
 #[cfg(test)]
 mod tests {

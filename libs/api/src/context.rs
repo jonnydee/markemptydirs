@@ -1,5 +1,5 @@
 use fscrawling;
-use log::Level;
+use LogLevel;
 use pathdiff::diff_paths;
 use std;
 use std::fmt;
@@ -50,8 +50,8 @@ pub struct ApplicationInfo {
 #[derive(PartialEq, Debug)]
 pub struct Config {
     pub exclude_dirs: PathList,
-    pub executable_file: String,
-    pub log_level: Level,
+    pub executable_file: PathBuf,
+    pub log_level: LogLevel,
     pub marker_name: String,
     pub dereference_symlinks: bool,
 }
@@ -62,8 +62,8 @@ impl Config {
         Config {
             // application_info: application_info,
             exclude_dirs: vec![Path::new(".git").to_owned()],
-            executable_file: "".to_string(),
-            log_level: Level::Error,
+            executable_file: PathBuf::new(),
+            log_level: LogLevel::Error,
             marker_name: ".emptydir".to_string(),
             dereference_symlinks: false,
         }

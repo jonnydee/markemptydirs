@@ -13,8 +13,8 @@ fn main() {
     if let Some((cfg, cmd)) = argv::parse_config_and_command() {
         let ctx = context::Context { config: cfg };
 
-        println!("{:?}", ctx);
+        //cmd.execute(&ctx).unwrap();
 
-        cmd.execute(&ctx).unwrap();
+        println!("{:?}", ctx);
     }
 }

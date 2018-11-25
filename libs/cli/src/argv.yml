@@ -1,5 +1,5 @@
 name: MarkEmptyDirs
-author: Johann Duscher <jonny.dee@gmx.net>
+author: Johann Duscher <jonny.dee@posteo.net>
 about: Manage marker files marking empty directories
 args:
     - exclude-dirs:
@@ -8,8 +8,8 @@ args:
         short: X
         value_name: DIR
         takes_value: true
-        multiple: true
-        default_value: .cvs, .git, .svn
+        value_delimiter: ":"
+        default_value: .cvs:.git:.svn
     - verbose:
         help: Sets the level of verbosity
         long: verbose
