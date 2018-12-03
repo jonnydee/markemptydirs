@@ -1,5 +1,5 @@
 use rayon::prelude::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::DirEntry;
 use std::path::PathBuf;
 
@@ -13,10 +13,29 @@ pub struct DirDescriptor {
     pub children: DirEntryList,
 
     marker_file_child_index: Option<usize>,
-    subdir_child_indexes: Vec<usize>,
+    subdir_child_indexes: HashSet<usize>,
 }
 
 impl DirDescriptor {
+    pub fn for_each_file<F>(&self, f: F)
+    where
+        F: FnMut(&DirEntry) -> (),
+    {
+        self.children.iter().enumerate().filter_map(
+            |(index, entry)| {
+                if let Some(marker_index) = self.marker_file_child_index {
+                    if marker_index == index {
+                        return None;
+                    }
+                }
+                if self.subdir_child_indexes.contains(&index) {
+                    return None;
+                }
+                Some(entry)
+            })
+            .for_each(f)
+    }
+
     pub fn for_each_sub_direntry<F>(&self, f: F)
     where
         F: FnMut(&DirEntry) -> (),
@@ -106,10 +125,10 @@ impl FileSystemCrawler {
             .collect();
 
         let mut marker_file_child_index = None;
-        let mut subdir_child_indexes = vec![];
+        let mut subdir_child_indexes = HashSet::new();
         children.iter().enumerate().for_each(|(index, entry)| {
             if self.is_crawlable_dir(&entry.path()) {
-                subdir_child_indexes.push(index);
+                subdir_child_indexes.insert(index);
             } else if marker_file_child_index.is_none() {
                 let entry_file_name = entry.file_name(); // Make temporary live long enough.
                 let entry_file_name = entry_file_name.to_str().unwrap_or("");

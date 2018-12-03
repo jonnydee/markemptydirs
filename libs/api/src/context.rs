@@ -92,7 +92,7 @@ impl Context {
             .collect()
     }
 
-    pub fn create_marker(&self, dir: &PathBuf, text: &String) -> std::io::Result<()> {
+    pub fn create_marker(&self, dir: &PathBuf, text: &String, dry_run: bool) -> std::io::Result<()> {
         let marker_file_path = {
             let mut dir = Context::get_absolute_dir(dir)?;
             dir.push(&self.config.marker_name);
@@ -100,7 +100,7 @@ impl Context {
         };
 
         // Write marker to disk.
-        {
+        if !dry_run {
             let mut file = File::create(&marker_file_path)?;
             file.write_all(text.as_bytes())?;
         }
@@ -109,13 +109,45 @@ impl Context {
         Ok(())
     }
 
-    pub fn create_marker_catched(&self, dir: &PathBuf, text: &String) {
-        if let Err(error) = self.create_marker(dir, text) {
+    pub fn create_marker_catched(&self, dir: &PathBuf, text: &String, dry_run: bool) {
+        if let Err(error) = self.create_marker(dir, text, dry_run) {
             error!(target: "create_marker", "{}: {:?}", error, &dir);
         }
     }
 
-    pub fn delete_marker(&self, dir: &PathBuf) -> std::io::Result<()> {
+    pub fn delete_child_file(&self, file: &PathBuf, dry_run: bool) -> std::io::Result<()> {
+        // Remove file from disk.
+        if !dry_run {
+            //fs::remove_file(&file)?;
+        }
+
+        info!(target: "delete_child_file", "Child file deleted: {:?}", &file);
+        Ok(())
+    }
+
+    pub fn delete_child_file_catched(&self, file: &PathBuf, dry_run: bool) {
+        if let Err(error) = self.delete_child_file(&file, dry_run) {
+            error!(target: "delete_child_file", "{}: {:?}", error, &file);
+        }
+    }
+
+    pub fn delete_child_dir(&self, dir: &PathBuf, dry_run: bool) -> std::io::Result<()> {
+        // Remove dir from disk.
+        if !dry_run {
+            //fs::remove_dir_all(&dir)?;
+        }
+
+        info!(target: "delete_child_dir", "Child dir deleted: {:?}", &dir);
+        Ok(())
+    }
+
+    pub fn delete_child_dir_catched(&self, dir: &PathBuf, dry_run: bool) {
+        if let Err(error) = self.delete_child_dir(&dir, dry_run) {
+            error!(target: "delete_child_dir", "{}: {:?}", error, &dir);
+        }
+    }
+
+    pub fn delete_marker(&self, dir: &PathBuf, dry_run: bool) -> std::io::Result<()> {
         let marker_file_path = {
             let mut dir = Context::get_absolute_dir(dir)?;
             dir.push(&self.config.marker_name);
@@ -123,14 +155,16 @@ impl Context {
         };
 
         // Remove marker from disk.
-        fs::remove_file(&marker_file_path)?;
+        if !dry_run {
+            fs::remove_file(&marker_file_path)?;
+        }
 
         info!(target: "delete_marker", "Marker deleted: {:?}", &marker_file_path);
         Ok(())
     }
 
-    pub fn delete_marker_catched(&self, dir: &PathBuf) {
-        if let Err(error) = self.delete_marker(&dir) {
+    pub fn delete_marker_catched(&self, dir: &PathBuf, dry_run: bool) {
+        if let Err(error) = self.delete_marker(&dir, dry_run) {
             error!(target: "delete_marker", "{}: {:?}", error, &dir);
         }
     }

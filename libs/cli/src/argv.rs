@@ -3,7 +3,7 @@ use api::commands;
 use clap::App;
 use clap::ArgMatches;
 use api::LogLevel;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 
 pub fn parse_config_and_command() -> Option<(context::Config, Box<commands::ICommand>)> {
@@ -68,6 +68,7 @@ fn parse_command_clean(matches : &ArgMatches) -> Box<commands::Clean> {
         cmd.root_dirs = root_dirs.into_iter().map(PathBuf::from).collect();
     }
 
+    println!("COMMAND: {:?}", &cmd);
     Box::new(cmd)
 }
 
@@ -87,6 +88,7 @@ fn parse_command_list(matches : &ArgMatches) -> Box<commands::List> {
         cmd.root_dirs = root_dirs.into_iter().map(PathBuf::from).collect();
     }
 
+    println!("COMMAND: {:?}", &cmd);
     Box::new(cmd)
 }
 
@@ -99,6 +101,7 @@ fn parse_command_purge(matches : &ArgMatches) -> Box<commands::Purge> {
         cmd.root_dirs = root_dirs.into_iter().map(PathBuf::from).collect();
     }
 
+    println!("COMMAND: {:?}", &cmd);
     Box::new(cmd)
 }
 
@@ -125,5 +128,6 @@ fn parse_command_update(matches : &ArgMatches) -> Box<commands::Update> {
 
     cmd.substitute_variables = matches.is_present("substitute-variables");
 
+    println!("COMMAND: {:?}", &cmd);
     Box::new(cmd)
 }

@@ -63,7 +63,7 @@ impl ICommand for Clean {
         // Delete all markers.
         descr_list.par_iter().for_each(|descr| {
             if descr.has_marker() {
-                ctx.delete_marker_catched(&descr.dir);
+                ctx.delete_marker_catched(&descr.dir, self.dry_run);
             }
         });
 
@@ -198,14 +198,14 @@ impl ICommand for Update {
         // Delete markers.
         descr_list.par_iter().for_each(|descr| {
             if descr.has_marker() && descr.has_children() {
-                ctx.delete_marker_catched(&descr.dir);
+                ctx.delete_marker_catched(&descr.dir, self.dry_run);
             }
         });
 
         // Create markers.
         descr_list.par_iter().for_each(|descr| {
             if !descr.has_marker() && !descr.has_children() {
-                ctx.create_marker_catched(&descr.dir, &self.marker_text);
+                ctx.create_marker_catched(&descr.dir, &self.marker_text, self.dry_run);
             }
         });
 
