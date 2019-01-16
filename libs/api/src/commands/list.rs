@@ -1,5 +1,3 @@
-use context;
-
 use super::*;
 
 use rayon::prelude::*;
@@ -37,7 +35,7 @@ impl List {
 }
 
 impl ICommand for List {
-    fn execute(&self, ctx: &context::Context) -> Result<()> {
+    fn execute(&self, ctx: &Context) -> Result<()> {
         let mut statistics_list: Vec<_> = ctx.crawl_dirs(&self.root_dirs)
             .into_par_iter()
             .map(|descr| {
@@ -46,7 +44,7 @@ impl ICommand for List {
                     marker_required: !descr.has_children(),
                     child_count: descr.get_child_count(),
                     dir_count: descr.get_sub_directory_count(),
-                    dir: match context::Context::get_relative_dir_to_current_dir(&descr.dir) {
+                    dir: match Context::get_relative_dir_to_current_dir(&descr.dir) {
                         Ok(Some(dir)) => dir,
                         _ => descr.dir,
                     },

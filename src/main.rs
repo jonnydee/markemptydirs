@@ -3,7 +3,7 @@ extern crate clap;
 extern crate cli;
 extern crate std_logger;
 
-use api::context;
+use api::commands;
 use cli::argv;
 
 
@@ -11,7 +11,7 @@ fn main() {
     std_logger::init();
 
     if let Some((cfg, cmd)) = argv::parse_config_and_command() {
-        let ctx = context::Context { config: cfg };
+        let ctx = commands::Context { config: cfg };
 
         cmd.execute(&ctx).unwrap();
 

@@ -1,4 +1,3 @@
-use api::context;
 use api::commands;
 use clap::App;
 use clap::ArgMatches;
@@ -6,7 +5,7 @@ use api::LogLevel;
 use std::path::PathBuf;
 
 
-pub fn parse_config_and_command() -> Option<(context::Config, Box<commands::ICommand>)> {
+pub fn parse_config_and_command() -> Option<(commands::Config, Box<commands::ICommand>)> {
     let yml = load_yaml!("argv.yml");
     let app = App::from_yaml(yml);
     let matches = app.get_matches();
@@ -19,8 +18,8 @@ pub fn parse_config_and_command() -> Option<(context::Config, Box<commands::ICom
     Some((cfg, cmd))
 }
 
-fn parse_config(matches : &ArgMatches) -> context::Config {
-    let mut cfg = context::Config::new();
+fn parse_config(matches : &ArgMatches) -> commands::Config {
+    let mut cfg = commands::Config::new();
 
     if let Some(exclude_dirs) = matches.values_of("exclude-dirs") {
         cfg.exclude_dirs = exclude_dirs.into_iter().map(PathBuf::from).collect();

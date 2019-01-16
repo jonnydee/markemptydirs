@@ -2,7 +2,6 @@ use fscrawling;
 use LogLevel;
 use pathdiff::diff_paths;
 use std;
-use std::fmt;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
@@ -10,41 +9,6 @@ use std::path::{Path, PathBuf};
 
 
 pub type PathList = Vec<PathBuf>;
-
-
-#[derive(Debug)]
-pub struct VersionInfo {
-    pub major: u16,
-    pub minor: u16,
-    pub bugfix: u16,
-    pub suffix: String,
-}
-
-impl fmt::Display for VersionInfo {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}.{}", self.major, self.minor)?;
-        if self.bugfix > 0 {
-            write!(f, ".{}", self.bugfix)?;
-        }
-        if !self.suffix.is_empty() {
-            write!(f, "-{}", &self.suffix)?;
-        }
-        Ok(())
-    }
-}
-
-
-#[derive(Debug)]
-pub struct ApplicationInfo {
-    pub copyright: String,
-    pub disclaimer: String,
-    pub license: String,
-    pub name: String,
-    pub site: String,
-    pub vendor_email: String,
-    pub vendor_name: String,
-    pub version_info: VersionInfo,
-}
 
 
 #[derive(PartialEq, Debug)]
@@ -58,9 +22,7 @@ pub struct Config {
 
 impl Config {
     pub fn new() -> Config {
-        // pub fn new(application_info: ApplicationInfo) -> Config {
         Config {
-            // application_info: application_info,
             exclude_dirs: vec![Path::new(".git").to_owned()],
             executable_file: PathBuf::new(),
             log_level: LogLevel::Error,
@@ -73,7 +35,6 @@ impl Config {
 
 #[derive(Debug)]
 pub struct Context {
-    // pub application_info: config::ApplicationInfo,
     pub config: Config,
 }
 
@@ -118,7 +79,7 @@ impl Context {
     pub fn delete_child_file(&self, file: &PathBuf, dry_run: bool) -> std::io::Result<()> {
         // Remove file from disk.
         if !dry_run {
-            //fs::remove_file(&file)?;
+            // TODO fs::remove_file(&file)?;
         }
 
         info!(target: "delete_child_file", "Child file deleted: {:?}", &file);
@@ -134,7 +95,7 @@ impl Context {
     pub fn delete_child_dir(&self, dir: &PathBuf, dry_run: bool) -> std::io::Result<()> {
         // Remove dir from disk.
         if !dry_run {
-            //fs::remove_dir_all(&dir)?;
+            // TODO fs::remove_dir_all(&dir)?;
         }
 
         info!(target: "delete_child_dir", "Child dir deleted: {:?}", &dir);
@@ -206,33 +167,3 @@ impl Context {
         Ok(root_dirs.iter().find(|root_dir| dir.starts_with(root_dir)))
     }
 }
-
-
-// #[derive(PartialEq, Debug)]
-// pub enum CommandListFilter {
-//     Clashing,
-//     Correct,
-//     Missing,
-// }
-
-// #[derive(PartialEq, Debug)]
-// pub enum Command {
-//     Clean {
-//         delete_hook: String,
-//         dry_run: bool,
-//         root_dirs: PathList,
-//     },
-//     List {
-//         filter: Vec<CommandListFilter>,
-//         root_dirs: PathList,
-//     },
-//     Purge { dry_run: bool, root_dirs: PathList },
-//     Update {
-//         create_hook: String,
-//         delete_hook: String,
-//         dry_run: bool,
-//         marker_text: String,
-//         root_dirs: PathList,
-//         substitute_variables: bool,
-//     },
-// }

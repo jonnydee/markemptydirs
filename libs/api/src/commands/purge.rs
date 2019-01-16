@@ -1,5 +1,3 @@
-use context;
-
 use super::*;
 
 
@@ -19,7 +17,7 @@ impl Purge {
 }
 
 impl ICommand for Purge {
-    fn execute(&self, _ctx: &context::Context) -> Result<()> {
+    fn execute(&self, _ctx: &Context) -> Result<()> {
         // TODO Implement Purge command.
         Err(Error::Message("To be implementd"))
     }

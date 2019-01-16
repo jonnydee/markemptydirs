@@ -1,14 +1,12 @@
 use std::path::{Path, PathBuf};
 
-use context;
-
-mod default;
-
-mod result;
-pub use self::result::*;
-
 mod clean;
 pub use self::clean::*;
+
+mod context;
+pub use self::context::*;
+
+mod default;
 
 mod list;
 pub use self::list::*;
@@ -18,6 +16,9 @@ pub use self::purge::*;
 
 mod update;
 pub use self::update::*;
+
+mod result;
+pub use self::result::*;
 
 pub type PathList = Vec<PathBuf>;
 

@@ -1,5 +1,3 @@
-use context;
-
 use super::*;
 
 use rayon::prelude::*;
@@ -29,7 +27,7 @@ impl Update {
 }
 
 impl ICommand for Update {
-    fn execute(&self, ctx: &context::Context) -> Result<()> {
+    fn execute(&self, ctx: &Context) -> Result<()> {
         let descr_list = ctx.crawl_dirs(&self.root_dirs);
 
         // Delete markers.
