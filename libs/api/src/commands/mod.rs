@@ -1,4 +1,5 @@
 use std::path::{Path, PathBuf};
+use Error;
 
 mod clean;
 pub use self::clean::*;
@@ -17,11 +18,9 @@ pub use self::purge::*;
 mod update;
 pub use self::update::*;
 
-mod result;
-pub use self::result::*;
-
 pub type PathList = Vec<PathBuf>;
 
+pub type Result<T> = std::result::Result<T, Error>;
 
 pub trait ICommand {
     fn execute(&self, ctx: &context::Context) -> Result<()>;
