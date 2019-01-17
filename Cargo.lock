@@ -248,7 +248,7 @@ version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "markemptydirs-rs"
+name = "markemptydirs"
 version = "0.1.0"
 dependencies = [
  "api 0.1.0",

@@ -1,7 +1,7 @@
 [package]
-name = "markemptydirs-rs"
+name = "markemptydirs"
 version = "0.1.0"
-authors = ["Jonny Dee <jonny.dee@gmx.net>"]
+authors = ["Johann Duscher <jonny.dee@posteo.net>"]
 
 [dependencies.api]
 path = "libs/api"
