@@ -20,7 +20,7 @@ impl Clean {
     }
 }
 
-impl ICommand for Clean {
+impl Command for Clean {
     fn execute(&self, ctx: &Context) -> Result<()> {
         let descr_list = ctx.crawl_dirs(&self.root_dirs);
 

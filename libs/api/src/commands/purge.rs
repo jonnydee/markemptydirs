@@ -16,7 +16,7 @@ impl Purge {
     }
 }
 
-impl ICommand for Purge {
+impl Command for Purge {
     fn execute(&self, _ctx: &Context) -> Result<()> {
         // TODO Implement Purge command.
         Err(Error::Message("To be implementd"))

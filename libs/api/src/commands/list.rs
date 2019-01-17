@@ -34,7 +34,7 @@ impl List {
     }
 }
 
-impl ICommand for List {
+impl Command for List {
     fn execute(&self, ctx: &Context) -> Result<()> {
         let mut statistics_list: Vec<_> = ctx.crawl_dirs(&self.root_dirs)
             .into_par_iter()

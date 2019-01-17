@@ -26,7 +26,7 @@ impl Update {
     }
 }
 
-impl ICommand for Update {
+impl Command for Update {
     fn execute(&self, ctx: &Context) -> Result<()> {
         let descr_list = ctx.crawl_dirs(&self.root_dirs);
 

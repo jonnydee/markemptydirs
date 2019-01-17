@@ -5,7 +5,7 @@ use api::notification::LogLevel;
 use std::path::PathBuf;
 
 
-pub fn parse_config_and_command() -> Option<(commands::Config, Box<commands::ICommand>)> {
+pub fn parse_config_and_command() -> Option<(commands::Config, Box<commands::Command>)> {
     let yml = load_yaml!("argv.yml");
     let app = App::from_yaml(yml);
     let matches = app.get_matches();
@@ -47,7 +47,7 @@ fn parse_config(matches : &ArgMatches) -> commands::Config {
     cfg
 }
 
-fn parse_command(matches : &ArgMatches) -> Box<commands::ICommand> {
+fn parse_command(matches : &ArgMatches) -> Box<commands::Command> {
     match matches.subcommand() {
         ("clean", Some(ref matches)) => parse_command_clean(matches),
         ("list", Some(ref matches)) => parse_command_list(matches),
