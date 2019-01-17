@@ -15,6 +15,8 @@ fn main() {
 
         cmd.execute(&ctx).unwrap();
 
-        println!("{:?}", ctx);
+        if cfg!(debug_assertions) {
+            println!("CONTEXT: {:?}", ctx);
+        }
     }
 }
