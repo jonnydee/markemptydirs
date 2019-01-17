@@ -10,8 +10,6 @@ extern crate quick_error;
 
 extern crate rayon;
 
-// extern crate text_table;
-
 pub mod commands;
 
 pub mod fscrawling;
