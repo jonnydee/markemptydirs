@@ -13,9 +13,11 @@ extern crate rayon;
 // extern crate text_table;
 
 pub mod commands;
+
 pub mod fscrawling;
 
-pub use log::Level as LogLevel;
+pub mod notification;
+
 
 quick_error! {
     #[derive(Debug)]

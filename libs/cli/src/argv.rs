@@ -1,7 +1,7 @@
 use api::commands;
 use clap::App;
 use clap::ArgMatches;
-use api::LogLevel;
+use api::notification::LogLevel;
 use std::path::PathBuf;
 
 

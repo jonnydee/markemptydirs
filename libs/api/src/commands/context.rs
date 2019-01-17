@@ -1,5 +1,7 @@
+use super::Error;
 use fscrawling;
-use LogLevel;
+use notification::{LogLevel, Notifier};
+use notification::logger::Logger;
 use pathdiff::diff_paths;
 use std;
 use std::fs;
@@ -36,9 +38,17 @@ impl Config {
 #[derive(Debug)]
 pub struct Context {
     pub config: Config,
+    pub notifier: Box<Notifier>,
 }
 
 impl Context {
+    pub fn new(config : Config) -> Context {
+        Context {
+            notifier: Box::new(Logger { log_level : config.log_level }),
+            config : config,
+        }
+    }
+
     pub fn crawl_dirs(&self, root_dirs: &PathList) -> fscrawling::DirDescriptorList {
         let crawler = fscrawling::FileSystemCrawler {
             exclude_dirs: self.config.exclude_dirs.clone(),
@@ -66,13 +76,13 @@ impl Context {
             file.write_all(text.as_bytes())?;
         }
 
-        info!(target: "create_marker", "Marker created: {:?}", &marker_file_path);
+        self.notifier.info("create_marker", &format!("Marker created: {:?}", &marker_file_path), None);
         Ok(())
     }
 
     pub fn create_marker_catched(&self, dir: &PathBuf, text: &String, dry_run: bool) {
         if let Err(error) = self.create_marker(dir, text, dry_run) {
-            error!(target: "create_marker", "{}: {:?}", error, &dir);
+            self.notifier.error("create_marker", &format!("{:?}", dir), Some(Error::Io(error)))
         }
     }
 
@@ -82,13 +92,13 @@ impl Context {
             // TODO fs::remove_file(&file)?;
         }
 
-        info!(target: "delete_child_file", "Child file deleted: {:?}", &file);
+        self.notifier.info("delete_child_file", &format!("Child file deleted: {:?}", &file), None);
         Ok(())
     }
 
     pub fn delete_child_file_catched(&self, file: &PathBuf, dry_run: bool) {
         if let Err(error) = self.delete_child_file(&file, dry_run) {
-            error!(target: "delete_child_file", "{}: {:?}", error, &file);
+            self.notifier.error("delete_child_file",  &format!("{:?}", file), Some(Error::Io(error)));
         }
     }
 
@@ -98,13 +108,13 @@ impl Context {
             // TODO fs::remove_dir_all(&dir)?;
         }
 
-        info!(target: "delete_child_dir", "Child dir deleted: {:?}", &dir);
+        self.notifier.info("delete_child_dir", &format!("Child dir deleted: {:?}", &dir), None);
         Ok(())
     }
 
     pub fn delete_child_dir_catched(&self, dir: &PathBuf, dry_run: bool) {
         if let Err(error) = self.delete_child_dir(&dir, dry_run) {
-            error!(target: "delete_child_dir", "{}: {:?}", error, &dir);
+            self.notifier.error("delete_child_dir", &format!("{:?}", dir), Some(Error::Io(error)));
         }
     }
 
@@ -120,13 +130,13 @@ impl Context {
             fs::remove_file(&marker_file_path)?;
         }
 
-        info!(target: "delete_marker", "Marker deleted: {:?}", &marker_file_path);
+        self.notifier.info("delete_marker", &format!("Marker deleted: {:?}", &marker_file_path), None);
         Ok(())
     }
 
     pub fn delete_marker_catched(&self, dir: &PathBuf, dry_run: bool) {
         if let Err(error) = self.delete_marker(&dir, dry_run) {
-            error!(target: "delete_marker", "{}: {:?}", error, &dir);
+            self.notifier.error("delete_marker", &format!("{:?}", dir), Some(Error::Io(error)));
         }
     }
 

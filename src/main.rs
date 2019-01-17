@@ -11,7 +11,7 @@ fn main() {
     std_logger::init();
 
     if let Some((cfg, cmd)) = argv::parse_config_and_command() {
-        let ctx = commands::Context { config: cfg };
+        let ctx = commands::Context::new(cfg);
 
         cmd.execute(&ctx).unwrap();
 
