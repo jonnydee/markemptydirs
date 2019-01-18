@@ -11,7 +11,7 @@ pub fn parse_config_and_command() -> Option<(commands::Config, Box<commands::Com
     let matches = app.get_matches();
 
     if cfg!(debug_assertions) {
-        println!("MATCHES: {:?}", matches);
+        dbg!(&matches);
     }
 
     let cfg = parse_config(&matches);
@@ -71,7 +71,7 @@ fn parse_command_clean(matches : &ArgMatches) -> Box<commands::Clean> {
     }
 
     if cfg!(debug_assertions) {
-        println!("COMMAND: {:?}", &cmd);
+        dbg!(&cmd);
     }
 
     Box::new(cmd)
@@ -94,7 +94,7 @@ fn parse_command_list(matches : &ArgMatches) -> Box<commands::List> {
     }
 
     if cfg!(debug_assertions) {
-        println!("COMMAND: {:?}", &cmd);
+        dbg!(&cmd);
     }
 
     Box::new(cmd)
@@ -110,7 +110,7 @@ fn parse_command_purge(matches : &ArgMatches) -> Box<commands::Purge> {
     }
 
     if cfg!(debug_assertions) {
-        println!("COMMAND: {:?}", &cmd);
+        dbg!(&cmd);
     }
 
     Box::new(cmd)
@@ -140,7 +140,7 @@ fn parse_command_update(matches : &ArgMatches) -> Box<commands::Update> {
     cmd.substitute_variables = matches.is_present("substitute-variables");
 
     if cfg!(debug_assertions) {
-        println!("COMMAND: {:?}", &cmd);
+        dbg!(&cmd);
     }
 
     Box::new(cmd)
