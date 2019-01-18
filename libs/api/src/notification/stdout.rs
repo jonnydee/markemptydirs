@@ -30,7 +30,7 @@ impl Stdout {
 impl std::fmt::Debug for Stdout {
 
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "[log_level: {}]", self.log_level)
+        write!(f, "Stdout {{ log_level: {} }}", self.log_level)
     }
 
 }

@@ -12,7 +12,7 @@ extern crate rayon;
 
 pub mod commands;
 
-pub mod fscrawling;
+pub mod fs;
 
 pub mod notification;
 

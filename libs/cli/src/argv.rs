@@ -5,6 +5,11 @@ use api::notification::LogLevel;
 use std::path::PathBuf;
 
 
+enum RunCommand {
+    DryRun(Box<commands::Command>),
+    Run(Box<commands::Command>)
+}
+
 pub fn parse_config_and_command() -> Option<(commands::Config, Box<commands::Command>)> {
     let yml = load_yaml!("argv.yml");
     let app = App::from_yaml(yml);
@@ -14,16 +19,22 @@ pub fn parse_config_and_command() -> Option<(commands::Config, Box<commands::Com
         dbg!(&matches);
     }
 
-    let cfg = parse_config(&matches);
-
-    let cmd = parse_command(&matches);
+    let (cmd, dry_run) = match parse_command(&matches) {
+        RunCommand::DryRun(cmd) => (cmd, true),
+        RunCommand::Run(cmd) => (cmd, false),
+    };
  
+    let cfg = parse_config(&matches, dry_run);
+
     Some((cfg, cmd))
 }
 
-fn parse_config(matches : &ArgMatches) -> commands::Config {
+
+fn parse_config(matches : &ArgMatches, dry_run : bool) -> commands::Config {
     let mut cfg = commands::Config::new();
 
+    cfg.dry_run = dry_run;
+    
     if let Some(exclude_dirs) = matches.values_of("exclude-dirs") {
         cfg.exclude_dirs = exclude_dirs.into_iter().map(PathBuf::from).collect();
     }
@@ -47,7 +58,7 @@ fn parse_config(matches : &ArgMatches) -> commands::Config {
     cfg
 }
 
-fn parse_command(matches : &ArgMatches) -> Box<commands::Command> {
+fn parse_command(matches : &ArgMatches) -> RunCommand {
     match matches.subcommand() {
         ("clean", Some(ref matches)) => parse_command_clean(matches),
         ("list", Some(ref matches)) => parse_command_list(matches),
@@ -57,8 +68,8 @@ fn parse_command(matches : &ArgMatches) -> Box<commands::Command> {
     }
 }
 
-fn parse_command_clean(matches : &ArgMatches) -> Box<commands::Clean> {
-    let mut cmd = commands::Clean::new();
+fn parse_command_clean(matches : &ArgMatches) -> RunCommand {
+    let mut cmd = Box::new(commands::Clean::new());
 
     if let Some(delete_hook) = matches.value_of("delete-hook") {
         cmd.delete_hook = delete_hook.to_owned();
@@ -74,11 +85,11 @@ fn parse_command_clean(matches : &ArgMatches) -> Box<commands::Clean> {
         dbg!(&cmd);
     }
 
-    Box::new(cmd)
+    if cmd.dry_run { RunCommand::DryRun(cmd) } else { RunCommand::Run(cmd) }
 }
 
-fn parse_command_list(matches : &ArgMatches) -> Box<commands::List> {
-    let mut cmd = commands::List::new();
+fn parse_command_list(matches : &ArgMatches) -> RunCommand {
+    let mut cmd = Box::new(commands::List::new());
 
     if let Some(filter) = matches.values_of("filter") {
         cmd.filter = filter.into_iter().map(|list_filter| match list_filter {
@@ -97,11 +108,11 @@ fn parse_command_list(matches : &ArgMatches) -> Box<commands::List> {
         dbg!(&cmd);
     }
 
-    Box::new(cmd)
+    RunCommand::Run(cmd)
 }
 
-fn parse_command_purge(matches : &ArgMatches) -> Box<commands::Purge> {
-    let mut cmd = commands::Purge::new();
+fn parse_command_purge(matches : &ArgMatches) -> RunCommand {
+    let mut cmd = Box::new(commands::Purge::new());
 
     cmd.dry_run = matches.is_present("dry-run");
 
@@ -113,11 +124,11 @@ fn parse_command_purge(matches : &ArgMatches) -> Box<commands::Purge> {
         dbg!(&cmd);
     }
 
-    Box::new(cmd)
+    if cmd.dry_run { RunCommand::DryRun(cmd) } else { RunCommand::Run(cmd) }
 }
 
-fn parse_command_update(matches : &ArgMatches) -> Box<commands::Update> {
-    let mut cmd = commands::Update::new();
+fn parse_command_update(matches : &ArgMatches) -> RunCommand {
+    let mut cmd = Box::new(commands::Update::new());
 
     if let Some(create_hook) = matches.value_of("create-hook") {
         cmd.create_hook = create_hook.to_owned();
@@ -143,5 +154,5 @@ fn parse_command_update(matches : &ArgMatches) -> Box<commands::Update> {
         dbg!(&cmd);
     }
 
-    Box::new(cmd)
+    if cmd.dry_run { RunCommand::DryRun(cmd) } else { RunCommand::Run(cmd) }
 }
