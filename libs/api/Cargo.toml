@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Johann Duscher <jonny.dee@posteo.net>"]
 
 [dependencies]
-handlebars = "*"
+# handlebars = "*" # String templates.
 log = "*"
 pathdiff = "*"
 quick-error = "*"

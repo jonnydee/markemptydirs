@@ -1,4 +1,4 @@
-extern crate handlebars;
+// extern crate handlebars;
 
 #[macro_use]
 extern crate log;
