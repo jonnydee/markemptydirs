@@ -1,7 +1,7 @@
 use super::Error;
 use fscrawling;
 use notification::{LogLevel, Notifier};
-use notification::logger::Logger;
+use notification::stdout::Stdout;
 use pathdiff::diff_paths;
 use std;
 use std::fs;
@@ -44,7 +44,7 @@ pub struct Context {
 impl Context {
     pub fn new(config : Config) -> Context {
         Context {
-            notifier: Box::new(Logger { log_level : config.log_level }),
+            notifier: Box::new(Stdout::new(config.log_level)),
             config : config,
         }
     }

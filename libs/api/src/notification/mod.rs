@@ -1,5 +1,7 @@
 pub mod logger;
 
+pub mod stdout;
+
 pub use log::Level as LogLevel;
 
 use Error;
