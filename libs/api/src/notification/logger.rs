@@ -8,7 +8,7 @@ pub struct LoggerNotifier {
 }
 
 impl LoggerNotifier {
-    pub fn factory(log_level: LogLevel) -> Box<Notifier> {
+    pub fn create(log_level: LogLevel) -> Box<Notifier> {
         Box::new(LoggerNotifier {
             log_level: log_level,
         })

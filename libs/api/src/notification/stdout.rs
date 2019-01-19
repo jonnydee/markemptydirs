@@ -7,7 +7,7 @@ pub struct StdoutNotifier {
 }
 
 impl StdoutNotifier {
-    pub fn factory(log_level: LogLevel) -> Box<Notifier> {
+    pub fn create(log_level: LogLevel) -> Box<Notifier> {
         Box::new(StdoutNotifier {
             log_level: log_level,
         })

@@ -30,7 +30,7 @@ pub fn create_session(appinfo: application::ApplicationInfo) -> Option<applicati
                 appinfo,
                 cfg,
                 exec,
-                notification::StdoutNotifier::factory,
+                notification::StdoutNotifier::create,
             ));
         }
     }

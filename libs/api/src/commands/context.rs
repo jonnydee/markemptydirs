@@ -1,5 +1,5 @@
 use super::Error;
-use crate::fs;
+use crate::fs::{DirDescriptorList, FileSystemAccess, FileSystemCrawler};
 use application::ApplicationInfo;
 use notification::{LogLevel, Notifier};
 use pathdiff::diff_paths;
@@ -37,7 +37,7 @@ impl Config {
 pub struct Context {
     pub appinfo: ApplicationInfo,
     pub config: Config,
-    pub fsaccess: Box<fs::access::FileSystemAccess>,
+    pub fsaccess: Box<FileSystemAccess>,
     pub notifier: Box<Notifier>,
 }
 
@@ -47,17 +47,18 @@ impl Context {
         config: Config,
         dry_run: bool,
         notifier_factory: impl FnOnce(LogLevel) -> Box<Notifier>,
+        fsaccess_factory: impl FnOnce(bool) -> Box<FileSystemAccess>,
     ) -> Context {
         Context {
             appinfo: appinfo,
             notifier: notifier_factory(config.log_level),
-            fsaccess: Context::create_fs_access(dry_run),
+            fsaccess: fsaccess_factory(dry_run),
             config: config,
         }
     }
 
-    pub fn crawl_dirs(&self, root_dirs: &PathList) -> fs::crawling::DirDescriptorList {
-        let crawler = fs::crawling::FileSystemCrawler {
+    pub fn crawl_dirs(&self, root_dirs: &PathList) -> DirDescriptorList {
+        let crawler = FileSystemCrawler {
             exclude_dirs: self.config.exclude_dirs.clone(),
             dereference_symlinks: self.config.dereference_symlinks,
             marker_name: self.config.marker_name.clone(),
@@ -205,13 +206,5 @@ impl Context {
     ) -> std::io::Result<Option<&'a PathBuf>> {
         let dir = Context::get_absolute_dir(dir)?;
         Ok(root_dirs.iter().find(|root_dir| dir.starts_with(root_dir)))
-    }
-
-    fn create_fs_access(dry_run: bool) -> Box<fs::access::FileSystemAccess> {
-        if dry_run {
-            Box::new(fs::access::DryRunFileSystemAccess {})
-        } else {
-            Box::new(fs::access::RealFileSystemAccess {})
-        }
     }
 }

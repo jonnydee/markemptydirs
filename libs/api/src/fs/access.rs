@@ -11,8 +11,16 @@ pub trait FileSystemAccess: Sync + std::fmt::Debug {
     fn remove_dir_all(&self, path: &Path) -> Result<()>;
 }
 
+pub fn create_file_system_access(dry_run: bool) -> Box<FileSystemAccess> {
+    if dry_run {
+        Box::new(DryRunFileSystemAccess {})
+    } else {
+        Box::new(RealFileSystemAccess {})
+    }
+}
+
 #[derive(Debug)]
-pub struct RealFileSystemAccess {}
+struct RealFileSystemAccess {}
 
 impl FileSystemAccess for RealFileSystemAccess {
     fn create_file(&self, path: &Path, text: &str) -> Result<()> {
@@ -31,7 +39,7 @@ impl FileSystemAccess for RealFileSystemAccess {
 }
 
 #[derive(Debug)]
-pub struct DryRunFileSystemAccess {}
+struct DryRunFileSystemAccess {}
 
 impl FileSystemAccess for DryRunFileSystemAccess {
     fn create_file(&self, _path: &Path, _text: &str) -> Result<()> {
