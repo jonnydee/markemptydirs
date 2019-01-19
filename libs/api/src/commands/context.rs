@@ -79,7 +79,7 @@ impl Context {
 
         self.notifier.info(
             "create_marker",
-            &format!("Marker created: {:?}", marker_file_path),
+            &format!("Marker created: {}", fs::to_native(marker_file_path)),
             None,
         );
         Ok(())
@@ -89,7 +89,7 @@ impl Context {
         if let Err(error) = self.create_marker_impl(dir, text) {
             self.notifier.error(
                 "create_marker",
-                &format!("{:?}", dir),
+                &format!("{}", fs::to_native(dir)),
                 Some(Error::Io(error)),
             )
         }
@@ -101,7 +101,7 @@ impl Context {
 
         self.notifier.info(
             "delete_child_file",
-            &format!("Child file deleted: {:?}", file),
+            &format!("Child file deleted: {}", fs::to_native(file)),
             None,
         );
         Ok(())
@@ -111,7 +111,7 @@ impl Context {
         if let Err(error) = self.delete_child_file_impl(file) {
             self.notifier.error(
                 "delete_child_file",
-                &format!("{:?}", file),
+                &format!("{}", fs::to_native(file)),
                 Some(Error::Io(error)),
             );
         }
@@ -123,7 +123,7 @@ impl Context {
 
         self.notifier.info(
             "delete_child_dir",
-            &format!("Child dir deleted: {:?}", dir),
+            &format!("Child dir deleted: {}", fs::to_native(dir)),
             None,
         );
         Ok(())
@@ -133,7 +133,7 @@ impl Context {
         if let Err(error) = self.delete_child_dir_impl(dir) {
             self.notifier.error(
                 "delete_child_dir",
-                &format!("{:?}", dir),
+                &format!("{}", fs::to_native(dir)),
                 Some(Error::Io(error)),
             );
         }
@@ -147,7 +147,7 @@ impl Context {
 
         self.notifier.info(
             "delete_marker",
-            &format!("Marker deleted: {:?}", marker_file_path),
+            &format!("Marker deleted: {}", fs::to_native(marker_file_path)),
             None,
         );
         Ok(())
@@ -157,7 +157,7 @@ impl Context {
         if let Err(error) = self.delete_marker_impl(dir) {
             self.notifier.error(
                 "delete_marker",
-                &format!("{:?}", dir),
+                &format!("{}", fs::to_native(dir)),
                 Some(Error::Io(error)),
             );
         }

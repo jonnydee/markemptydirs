@@ -28,3 +28,7 @@ pub fn get_relative_dir_to_current_dir(dir: &PathBuf) -> std::io::Result<Option<
         None => Ok(None),
     }
 }
+
+pub fn to_native(dir: &PathBuf) -> String {
+    dir.as_os_str().to_string_lossy().into_owned()
+}
