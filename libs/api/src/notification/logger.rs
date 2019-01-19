@@ -3,11 +3,19 @@ use super::LogLevel;
 use super::Notifier;
 
 #[derive(PartialEq, Debug)]
-pub struct Logger {
+pub struct LoggerNotifier {
     pub log_level: LogLevel,
 }
 
-impl Notifier for Logger {
+impl LoggerNotifier {
+    pub fn factory(log_level: LogLevel) -> Box<Notifier> {
+        Box::new(LoggerNotifier {
+            log_level: log_level,
+        })
+    }
+}
+
+impl Notifier for LoggerNotifier {
     fn debug(&self, target: &str, text: &str, error: Option<Error>) {
         if self.log_level < LogLevel::Debug {
             return;

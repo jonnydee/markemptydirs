@@ -2,15 +2,15 @@ use super::Error;
 use super::LogLevel;
 use super::Notifier;
 
-pub struct Stdout {
+pub struct StdoutNotifier {
     log_level: LogLevel,
 }
 
-impl Stdout {
-    pub fn new(log_level: LogLevel) -> Stdout {
-        Stdout {
+impl StdoutNotifier {
+    pub fn factory(log_level: LogLevel) -> Box<Notifier> {
+        Box::new(StdoutNotifier {
             log_level: log_level,
-        }
+        })
     }
 
     fn notify(&self, log_level: LogLevel, target: &str, text: &str, error: Option<Error>) {
@@ -28,13 +28,13 @@ impl Stdout {
     }
 }
 
-impl std::fmt::Debug for Stdout {
+impl std::fmt::Debug for StdoutNotifier {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "Stdout {{ log_level: {} }}", self.log_level)
     }
 }
 
-impl Notifier for Stdout {
+impl Notifier for StdoutNotifier {
     fn debug(&self, target: &str, text: &str, error: Option<Error>) {
         self.notify(LogLevel::Debug, target, text, error);
     }

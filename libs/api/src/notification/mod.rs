@@ -1,6 +1,8 @@
-pub mod logger;
+mod logger;
+pub use self::logger::*;
 
-pub mod stdout;
+mod stdout;
+pub use self::stdout::*;
 
 pub use log::Level as LogLevel;
 

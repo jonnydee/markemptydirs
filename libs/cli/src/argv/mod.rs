@@ -4,6 +4,7 @@ mod config_parsing;
 
 use api::application;
 use api::commands;
+use api::notification;
 use clap::ArgMatches;
 
 pub trait ConfigParser {
@@ -25,7 +26,12 @@ pub fn create_session(appinfo: application::ApplicationInfo) -> Option<applicati
 
     if let Some(cfg) = commands::Config::parse(&matches) {
         if let Some(exec) = commands::Command::parse(&matches) {
-            return Some(application::Session::new(appinfo, cfg, exec));
+            return Some(application::Session::new(
+                appinfo,
+                cfg,
+                exec,
+                notification::StdoutNotifier::factory,
+            ));
         }
     }
 
