@@ -9,7 +9,7 @@ use cli::argv;
 fn main() {
     std_logger::init();
 
-    if let Some((cfg, cmd)) = argv::parse_config_and_command() {
+    if let Some((cfg, cmd)) = argv::parse() {
         let ctx = commands::Context::new(cfg);
 
         cmd.execute(&ctx).unwrap();
