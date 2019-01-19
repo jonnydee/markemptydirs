@@ -10,7 +10,6 @@ pub type PathList = Vec<PathBuf>;
 
 #[derive(PartialEq, Debug)]
 pub struct Config {
-    pub dry_run: bool,
     pub exclude_dirs: PathList,
     pub executable_file: PathBuf,
     pub log_level: LogLevel,
@@ -25,7 +24,6 @@ impl Config {
 
     pub fn new() -> Config {
         Config {
-            dry_run: false,
             exclude_dirs: vec![Path::new(".git").to_owned()],
             executable_file: PathBuf::new(),
             log_level: LogLevel::Error,
@@ -43,10 +41,10 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(config: Config) -> Context {
+    pub fn new(config: Config, dry_run: bool) -> Context {
         Context {
             notifier: Context::create_notifier(config.log_level),
-            fsaccess: Context::create_fs_access(&config),
+            fsaccess: Context::create_fs_access(dry_run),
             config: config,
         }
     }
@@ -202,8 +200,8 @@ impl Context {
         Ok(root_dirs.iter().find(|root_dir| dir.starts_with(root_dir)))
     }
 
-    fn create_fs_access(config: &Config) -> Box<fs::access::FileSystemAccess> {
-        if config.dry_run {
+    fn create_fs_access(dry_run: bool) -> Box<fs::access::FileSystemAccess> {
+        if dry_run {
             Box::new(fs::access::DryRunFileSystemAccess {})
         } else {
             Box::new(fs::access::RealFileSystemAccess {})

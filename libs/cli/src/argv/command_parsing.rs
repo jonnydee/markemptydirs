@@ -1,13 +1,13 @@
-use super::{CommandExecution, CommandParser};
+use super::CommandParser;
 use api::commands;
 use clap::ArgMatches;
 use std::path::PathBuf;
 
 // Import enum values directly into this namespace in order to make code more readable,
-use self::CommandExecution::*;
+use api::commands::Execution::*;
 
 impl CommandParser for commands::Command {
-    fn parse(matches: &ArgMatches) -> Option<CommandExecution> {
+    fn parse(matches: &ArgMatches) -> Option<commands::Execution> {
         if let Some(cmd) = commands::Clean::parse(matches) {
             return Some(cmd);
         }
@@ -29,7 +29,7 @@ impl CommandParser for commands::Command {
 }
 
 impl CommandParser for commands::Clean {
-    fn parse(matches: &ArgMatches) -> Option<CommandExecution> {
+    fn parse(matches: &ArgMatches) -> Option<commands::Execution> {
         if let ("clean", Some(ref matches)) = matches.subcommand() {
             let mut cmd = Box::new(commands::Clean::new());
 
@@ -41,10 +41,6 @@ impl CommandParser for commands::Clean {
 
             if let Some(root_dirs) = matches.values_of("root-dirs") {
                 cmd.root_dirs = root_dirs.into_iter().map(PathBuf::from).collect();
-            }
-
-            if cfg!(debug_assertions) {
-                dbg!(&cmd);
             }
 
             if cmd.dry_run {
@@ -59,7 +55,7 @@ impl CommandParser for commands::Clean {
 }
 
 impl CommandParser for commands::List {
-    fn parse(matches: &ArgMatches) -> Option<CommandExecution> {
+    fn parse(matches: &ArgMatches) -> Option<commands::Execution> {
         if let ("list", Some(ref matches)) = matches.subcommand() {
             let mut cmd = Box::new(commands::List::new());
 
@@ -79,10 +75,6 @@ impl CommandParser for commands::List {
                 cmd.root_dirs = root_dirs.into_iter().map(PathBuf::from).collect();
             }
 
-            if cfg!(debug_assertions) {
-                dbg!(&cmd);
-            }
-
             Some(Run(cmd))
         } else {
             None
@@ -91,7 +83,7 @@ impl CommandParser for commands::List {
 }
 
 impl CommandParser for commands::Purge {
-    fn parse(matches: &ArgMatches) -> Option<CommandExecution> {
+    fn parse(matches: &ArgMatches) -> Option<commands::Execution> {
         if let ("purge", Some(ref matches)) = matches.subcommand() {
             let mut cmd = Box::new(commands::Purge::new());
 
@@ -99,10 +91,6 @@ impl CommandParser for commands::Purge {
 
             if let Some(root_dirs) = matches.values_of("root-dirs") {
                 cmd.root_dirs = root_dirs.into_iter().map(PathBuf::from).collect();
-            }
-
-            if cfg!(debug_assertions) {
-                dbg!(&cmd);
             }
 
             if cmd.dry_run {
@@ -117,7 +105,7 @@ impl CommandParser for commands::Purge {
 }
 
 impl CommandParser for commands::Update {
-    fn parse(matches: &ArgMatches) -> Option<CommandExecution> {
+    fn parse(matches: &ArgMatches) -> Option<commands::Execution> {
         if let ("update", Some(ref matches)) = matches.subcommand() {
             let mut cmd = Box::new(commands::Update::new());
 
@@ -140,10 +128,6 @@ impl CommandParser for commands::Update {
             }
 
             cmd.substitute_variables = matches.is_present("substitute-variables");
-
-            if cfg!(debug_assertions) {
-                dbg!(&cmd);
-            }
 
             if cmd.dry_run {
                 Some(DryRun(cmd))

@@ -5,10 +5,8 @@ use clap::ArgMatches;
 use std::path::PathBuf;
 
 impl ConfigParser for commands::Config {
-    fn parse(matches: &ArgMatches, dry_run: bool) -> Option<commands::Config> {
+    fn parse(matches: &ArgMatches) -> Option<commands::Config> {
         let mut cfg = commands::Config::new();
-
-        cfg.dry_run = dry_run;
 
         if let Some(exclude_dirs) = matches.values_of("exclude-dirs") {
             cfg.exclude_dirs = exclude_dirs.into_iter().map(PathBuf::from).collect();

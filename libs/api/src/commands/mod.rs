@@ -20,6 +20,12 @@ pub type PathList = Vec<PathBuf>;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-pub trait Command {
+pub trait Command: std::fmt::Debug {
     fn execute(&self, ctx: &context::Context) -> Result<()>;
+}
+
+#[derive(Debug)]
+pub enum Execution {
+    DryRun(Box<Command>),
+    Run(Box<Command>),
 }

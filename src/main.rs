@@ -3,19 +3,14 @@ extern crate clap;
 extern crate cli;
 extern crate std_logger;
 
-use api::commands;
-use cli::argv;
-
-fn main() {
+fn main() -> api::commands::Result<()> {
     std_logger::init();
 
-    if let Some((cfg, cmd)) = argv::parse() {
-        let ctx = commands::Context::new(cfg);
+    let session = cli::argv::create_session().unwrap();
 
-        cmd.execute(&ctx).unwrap();
-
-        if cfg!(debug_assertions) {
-            dbg!(ctx);
-        }
+    if cfg!(debug_assertions) {
+        dbg!(&session);
     }
+
+    session.run()
 }
