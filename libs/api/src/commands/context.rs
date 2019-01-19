@@ -4,6 +4,7 @@ use crate::fs::{DirDescriptorList, FileSystemAccess, FileSystemCrawler};
 use application::ApplicationInfo;
 use notification::{LogLevel, MessageLength, Notifier};
 use std;
+use std::fmt::Debug;
 use std::path::{Path, PathBuf};
 
 pub type PathList = Vec<PathBuf>;
@@ -35,42 +36,52 @@ impl Config {
     }
 }
 
-#[derive(Debug)]
-pub struct Context {
-    pub appinfo: ApplicationInfo,
-    pub config: Config,
-    pub fsaccess: Box<FileSystemAccess>,
-    pub notifier: Box<Notifier>,
+pub trait Context: Sync + Debug {
+    fn get_appinfo(&self) -> &ApplicationInfo;
+
+    fn get_config(&self) -> &Config;
+
+    fn get_notifier(&self) -> &Notifier;
+
+    fn get_root_dir<'a>(
+        &self,
+        dir: &PathBuf,
+        root_dirs: &'a PathList,
+    ) -> std::io::Result<Option<&'a PathBuf>>;
+
+    fn crawl_dirs(&self, root_dirs: &PathList) -> DirDescriptorList;
+
+    fn create_marker(&self, dir: &PathBuf, text: &String);
+
+    fn delete_child_file(&self, file: &PathBuf);
+
+    fn delete_child_dir(&self, dir: &PathBuf);
+
+    fn delete_marker(&self, dir: &PathBuf);
 }
 
-impl Context {
+#[derive(Debug)]
+pub struct DefaultContext {
+    appinfo: ApplicationInfo,
+    config: Config,
+    fsaccess: Box<FileSystemAccess>,
+    notifier: Box<Notifier>,
+}
+
+impl DefaultContext {
     pub fn new(
         appinfo: ApplicationInfo,
         config: Config,
         dry_run: bool,
         notifier_factory: impl FnOnce(LogLevel, MessageLength) -> Box<Notifier>,
         fsaccess_factory: impl FnOnce(bool) -> Box<FileSystemAccess>,
-    ) -> Context {
-        Context {
+    ) -> DefaultContext {
+        DefaultContext {
             appinfo: appinfo,
             notifier: notifier_factory(config.log_level, config.message_length),
             fsaccess: fsaccess_factory(dry_run),
             config: config,
         }
-    }
-
-    pub fn crawl_dirs(&self, root_dirs: &PathList) -> DirDescriptorList {
-        let crawler = FileSystemCrawler {
-            exclude_dirs: self.config.exclude_dirs.clone(),
-            dereference_symlinks: self.config.dereference_symlinks,
-            marker_name: self.config.marker_name.clone(),
-        };
-
-        crawler
-            .crawl_dirs(root_dirs.clone())
-            .into_iter()
-            .map(|(_, descr)| descr)
-            .collect()
     }
 
     fn create_marker_impl(&self, dir: &PathBuf, text: &String) -> std::io::Result<()> {
@@ -88,17 +99,6 @@ impl Context {
         Ok(())
     }
 
-    pub fn create_marker(&self, dir: &PathBuf, text: &String) {
-        if let Err(error) = self.create_marker_impl(dir, text) {
-            self.notifier.error(
-                "create_marker",
-                "Marker creation failed",
-                &fs::to_native(dir),
-                Some(Error::Io(error)),
-            )
-        }
-    }
-
     fn delete_child_file_impl(&self, file: &PathBuf) -> std::io::Result<()> {
         // Remove file from disk.
         self.fsaccess.remove_file(file)?;
@@ -112,17 +112,6 @@ impl Context {
         Ok(())
     }
 
-    pub fn delete_child_file(&self, file: &PathBuf) {
-        if let Err(error) = self.delete_child_file_impl(file) {
-            self.notifier.error(
-                "delete_child_file",
-                "Child file deletion failed",
-                &fs::to_native(file),
-                Some(Error::Io(error)),
-            );
-        }
-    }
-
     fn delete_child_dir_impl(&self, dir: &PathBuf) -> std::io::Result<()> {
         // Remove dir from disk.
         self.fsaccess.remove_dir_all(dir)?;
@@ -134,17 +123,6 @@ impl Context {
             None,
         );
         Ok(())
-    }
-
-    pub fn delete_child_dir(&self, dir: &PathBuf) {
-        if let Err(error) = self.delete_child_dir_impl(dir) {
-            self.notifier.error(
-                "delete_child_dir",
-                "Child deletion failed",
-                &fs::to_native(dir),
-                Some(Error::Io(error)),
-            );
-        }
     }
 
     fn delete_marker_impl(&self, dir: &PathBuf) -> std::io::Result<()> {
@@ -162,7 +140,74 @@ impl Context {
         Ok(())
     }
 
-    pub fn delete_marker(&self, dir: &PathBuf) {
+    fn get_marker_file_path(&self, dir: &PathBuf) -> std::io::Result<PathBuf> {
+        let mut dir = fs::get_absolute_dir(dir)?;
+        dir.push(&self.config.marker_name);
+        Ok(dir)
+    }
+}
+
+impl Context for DefaultContext {
+    fn get_appinfo(&self) -> &ApplicationInfo {
+        &self.appinfo
+    }
+
+    fn get_config(&self) -> &Config {
+        &self.config
+    }
+
+    fn get_notifier(&self) -> &Notifier {
+        &*self.notifier
+    }
+
+    fn crawl_dirs(&self, root_dirs: &PathList) -> DirDescriptorList {
+        let crawler = FileSystemCrawler {
+            exclude_dirs: self.config.exclude_dirs.clone(),
+            dereference_symlinks: self.config.dereference_symlinks,
+            marker_name: self.config.marker_name.clone(),
+        };
+
+        crawler
+            .crawl_dirs(root_dirs.clone())
+            .into_iter()
+            .map(|(_, descr)| descr)
+            .collect()
+    }
+
+    fn create_marker(&self, dir: &PathBuf, text: &String) {
+        if let Err(error) = self.create_marker_impl(dir, text) {
+            self.notifier.error(
+                "create_marker",
+                "Marker creation failed",
+                &fs::to_native(dir),
+                Some(Error::Io(error)),
+            )
+        }
+    }
+
+    fn delete_child_file(&self, file: &PathBuf) {
+        if let Err(error) = self.delete_child_file_impl(file) {
+            self.notifier.error(
+                "delete_child_file",
+                "Child file deletion failed",
+                &fs::to_native(file),
+                Some(Error::Io(error)),
+            );
+        }
+    }
+
+    fn delete_child_dir(&self, dir: &PathBuf) {
+        if let Err(error) = self.delete_child_dir_impl(dir) {
+            self.notifier.error(
+                "delete_child_dir",
+                "Child deletion failed",
+                &fs::to_native(dir),
+                Some(Error::Io(error)),
+            );
+        }
+    }
+
+    fn delete_marker(&self, dir: &PathBuf) {
         if let Err(error) = self.delete_marker_impl(dir) {
             self.notifier.error(
                 "delete_marker",
@@ -173,18 +218,12 @@ impl Context {
         }
     }
 
-    pub fn get_root_dir<'a>(
+    fn get_root_dir<'a>(
         &self,
         dir: &PathBuf,
         root_dirs: &'a PathList,
     ) -> std::io::Result<Option<&'a PathBuf>> {
         let dir = fs::get_absolute_dir(dir)?;
         Ok(root_dirs.iter().find(|root_dir| dir.starts_with(root_dir)))
-    }
-
-    fn get_marker_file_path(&self, dir: &PathBuf) -> std::io::Result<PathBuf> {
-        let mut dir = fs::get_absolute_dir(dir)?;
-        dir.push(&self.config.marker_name);
-        Ok(dir)
     }
 }

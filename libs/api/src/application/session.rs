@@ -1,14 +1,14 @@
 use self::Execution::*;
 use application::ApplicationInfo;
-use commands::{Command, Config, Context, Execution, Result};
+use commands::{Command, Config, Context, DefaultContext, Execution, Result};
 use fs;
 use fs::FileSystemAccess;
-use notification::{MessageLength, LogLevel, Notifier};
+use notification::{LogLevel, MessageLength, Notifier};
 
 #[derive(Debug)]
 pub struct Session {
     pub command: Box<Command>,
-    pub context: Context,
+    pub context: Box<Context>,
 }
 
 impl Session {
@@ -39,7 +39,13 @@ impl Session {
             Run(cmd) => (cmd, false),
         };
 
-        let ctx = Context::new(appinfo, cfg, dry_run, nofitier_factory, fsaccess_factory);
+        let ctx = Box::new(DefaultContext::new(
+            appinfo,
+            cfg,
+            dry_run,
+            nofitier_factory,
+            fsaccess_factory,
+        ));
 
         Session {
             command: cmd,
@@ -48,6 +54,6 @@ impl Session {
     }
 
     pub fn run(&self) -> Result<()> {
-        self.command.execute(&self.context)
+        self.command.execute(&*self.context)
     }
 }
