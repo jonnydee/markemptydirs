@@ -1,82 +1,57 @@
 use super::Error;
-use super::LogLevel;
 use super::Notifier;
+use super::{LogLevel, MessageLength};
 
 #[derive(PartialEq, Debug)]
 pub struct LoggerNotifier {
     pub log_level: LogLevel,
+    pub message_length: MessageLength,
 }
 
 impl LoggerNotifier {
-    pub fn create(log_level: LogLevel) -> Box<Notifier> {
+    pub fn create(log_level: LogLevel, message_length: MessageLength) -> Box<Notifier> {
         Box::new(LoggerNotifier {
             log_level: log_level,
+            message_length: message_length,
         })
     }
 }
 
 impl Notifier for LoggerNotifier {
-    fn debug(&self, target: &str, text: &str, error: Option<Error>) {
-        if self.log_level < LogLevel::Debug {
-            return;
-        }
-
-        if let Some(err) = error {
-            debug!(target: &target, "{}: {}", err, text)
-        } else {
-            debug!(target: &target, "{}", text)
-        }
-    }
-
-    fn error(&self, target: &str, text: &str, error: Option<Error>) {
-        if self.log_level < LogLevel::Error {
-            return;
-        }
-
-        if let Some(err) = error {
-            error!(target: &target, "{}: {}", err, text)
-        } else {
-            error!(target: &target, "{}", text)
-        }
-    }
-
     fn get_log_level(&self) -> LogLevel {
         self.log_level
     }
 
-    fn info(&self, target: &str, text: &str, error: Option<Error>) {
-        if self.log_level < LogLevel::Info {
+    fn notify(
+        &self,
+        log_level: LogLevel,
+        target: &str,
+        info: &str,
+        data: &str,
+        error: Option<Error>,
+    ) {
+        if self.log_level < log_level {
             return;
         }
 
-        if let Some(err) = error {
-            info!(target: &target, "{}: {}", err, text)
+        let msg = if let Some(err) = error {
+            match self.message_length {
+                MessageLength::Short => format!("{}: {}", info, data),
+                MessageLength::Long => format!("{}: {} ({})", info, data, err),
+            }
         } else {
-            info!(target: &target, "{}", text)
-        }
-    }
+            match self.message_length {
+                MessageLength::Short => format!("{}", data),
+                MessageLength::Long => format!("{}: {}", info, data),
+            }
+        };
 
-    fn trace(&self, target: &str, text: &str, error: Option<Error>) {
-        if self.log_level < LogLevel::Trace {
-            return;
-        }
-
-        if let Some(err) = error {
-            trace!(target: &target, "{}: {}", err, text)
-        } else {
-            trace!(target: &target, "{}", text)
-        }
-    }
-
-    fn warn(&self, target: &str, text: &str, error: Option<Error>) {
-        if self.log_level < LogLevel::Warn {
-            return;
-        }
-
-        if let Some(err) = error {
-            warn!(target: &target, "{}: {}", err, text)
-        } else {
-            warn!(target: &target, "{}", text)
+        match log_level {
+            LogLevel::Error => error!(target: &target, "{}", &msg),
+            LogLevel::Warn => warn!(target: &target, "{}", &msg),
+            LogLevel::Info => info!(target: &target, "{}", &msg),
+            LogLevel::Debug => debug!(target: &target, "{}", &msg),
+            LogLevel::Trace => trace!(target: &target, "{}", &msg),
         }
     }
 }

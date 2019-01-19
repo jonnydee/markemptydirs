@@ -1,6 +1,6 @@
 use super::ConfigParser;
 use api::commands;
-use api::notification::LogLevel;
+use api::notification::{LogLevel, MessageLength};
 use clap::ArgMatches;
 use std::path::PathBuf;
 
@@ -25,6 +25,12 @@ impl ConfigParser for commands::Config {
         };
 
         cfg.dereference_symlinks = matches.is_present("dereference-symlinks");
+
+        cfg.message_length = if matches.is_present("short-messages") {
+            MessageLength::Short
+        } else {
+            MessageLength::Long
+        };
 
         cfg.executable_file = std::env::current_exe().unwrap();
 

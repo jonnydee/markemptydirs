@@ -2,7 +2,7 @@ use super::Error;
 use crate::fs;
 use crate::fs::{DirDescriptorList, FileSystemAccess, FileSystemCrawler};
 use application::ApplicationInfo;
-use notification::{LogLevel, Notifier};
+use notification::{LogLevel, MessageLength, Notifier};
 use std;
 use std::path::{Path, PathBuf};
 
@@ -13,6 +13,7 @@ pub struct Config {
     pub exclude_dirs: PathList,
     pub executable_file: PathBuf,
     pub log_level: LogLevel,
+    pub message_length: MessageLength,
     pub marker_name: String,
     pub dereference_symlinks: bool,
 }
@@ -27,6 +28,7 @@ impl Config {
             exclude_dirs: vec![Path::new(".git").to_owned()],
             executable_file: PathBuf::new(),
             log_level: LogLevel::Error,
+            message_length: MessageLength::Long,
             marker_name: ".emptydir".to_string(),
             dereference_symlinks: false,
         }
@@ -46,12 +48,12 @@ impl Context {
         appinfo: ApplicationInfo,
         config: Config,
         dry_run: bool,
-        notifier_factory: impl FnOnce(LogLevel) -> Box<Notifier>,
+        notifier_factory: impl FnOnce(LogLevel, MessageLength) -> Box<Notifier>,
         fsaccess_factory: impl FnOnce(bool) -> Box<FileSystemAccess>,
     ) -> Context {
         Context {
             appinfo: appinfo,
-            notifier: notifier_factory(config.log_level),
+            notifier: notifier_factory(config.log_level, config.message_length),
             fsaccess: fsaccess_factory(dry_run),
             config: config,
         }
@@ -79,7 +81,8 @@ impl Context {
 
         self.notifier.info(
             "create_marker",
-            &format!("Marker created: {}", fs::to_native(marker_file_path)),
+            "Marker created",
+            &fs::to_native(marker_file_path),
             None,
         );
         Ok(())
@@ -89,6 +92,7 @@ impl Context {
         if let Err(error) = self.create_marker_impl(dir, text) {
             self.notifier.error(
                 "create_marker",
+                "Marker creation failed",
                 &fs::to_native(dir),
                 Some(Error::Io(error)),
             )
@@ -101,7 +105,8 @@ impl Context {
 
         self.notifier.info(
             "delete_child_file",
-            &format!("Child file deleted: {}", fs::to_native(file)),
+            "Child file deleted",
+            &fs::to_native(file),
             None,
         );
         Ok(())
@@ -111,6 +116,7 @@ impl Context {
         if let Err(error) = self.delete_child_file_impl(file) {
             self.notifier.error(
                 "delete_child_file",
+                "Child file deletion failed",
                 &fs::to_native(file),
                 Some(Error::Io(error)),
             );
@@ -123,7 +129,8 @@ impl Context {
 
         self.notifier.info(
             "delete_child_dir",
-            &format!("Child dir deleted: {}", fs::to_native(dir)),
+            "Child dir deleted",
+            &fs::to_native(dir),
             None,
         );
         Ok(())
@@ -133,6 +140,7 @@ impl Context {
         if let Err(error) = self.delete_child_dir_impl(dir) {
             self.notifier.error(
                 "delete_child_dir",
+                "Child deletion failed",
                 &fs::to_native(dir),
                 Some(Error::Io(error)),
             );
@@ -147,7 +155,8 @@ impl Context {
 
         self.notifier.info(
             "delete_marker",
-            &format!("Marker deleted: {}", fs::to_native(marker_file_path)),
+            "Marker deleted",
+            &fs::to_native(marker_file_path),
             None,
         );
         Ok(())
@@ -157,6 +166,7 @@ impl Context {
         if let Err(error) = self.delete_marker_impl(dir) {
             self.notifier.error(
                 "delete_marker",
+                "Marker deletion failed",
                 &fs::to_native(dir),
                 Some(Error::Io(error)),
             );

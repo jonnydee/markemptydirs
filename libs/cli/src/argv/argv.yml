@@ -24,6 +24,10 @@ args:
         help: Follow symlinks
         long: deref-symlinks
         short: L
+    - short-messages:
+        help: Output short messages
+        long: short-messages
+        short: s
 subcommands:
     - clean:
         about: Delete all markers in directory tree

@@ -3,7 +3,7 @@ use application::ApplicationInfo;
 use commands::{Command, Config, Context, Execution, Result};
 use fs;
 use fs::FileSystemAccess;
-use notification::{LogLevel, Notifier};
+use notification::{MessageLength, LogLevel, Notifier};
 
 #[derive(Debug)]
 pub struct Session {
@@ -16,7 +16,7 @@ impl Session {
         appinfo: ApplicationInfo,
         cfg: Config,
         exec: Execution,
-        nofitier_factory: impl FnOnce(LogLevel) -> Box<Notifier>,
+        nofitier_factory: impl FnOnce(LogLevel, MessageLength) -> Box<Notifier>,
     ) -> Session {
         Session::new_with_custom_file_system_access(
             appinfo,
@@ -31,7 +31,7 @@ impl Session {
         appinfo: ApplicationInfo,
         cfg: Config,
         exec: Execution,
-        nofitier_factory: impl FnOnce(LogLevel) -> Box<Notifier>,
+        nofitier_factory: impl FnOnce(LogLevel, MessageLength) -> Box<Notifier>,
         fsaccess_factory: impl FnOnce(bool) -> Box<FileSystemAccess>,
     ) -> Session {
         let (cmd, dry_run) = match exec {
