@@ -1,5 +1,6 @@
 use super::*;
 
+use fs;
 use rayon::prelude::*;
 
 #[derive(PartialEq, Debug)]
@@ -43,7 +44,7 @@ impl Command for List {
                 marker_required: !descr.has_children(),
                 child_count: descr.get_child_count(),
                 dir_count: descr.get_sub_directory_count(),
-                dir: match Context::get_relative_dir_to_current_dir(&descr.dir) {
+                dir: match fs::get_relative_dir_to_current_dir(&descr.dir) {
                     Ok(Some(dir)) => dir,
                     _ => descr.dir,
                 },

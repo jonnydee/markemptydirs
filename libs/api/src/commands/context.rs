@@ -1,8 +1,8 @@
 use super::Error;
+use crate::fs;
 use crate::fs::{DirDescriptorList, FileSystemAccess, FileSystemCrawler};
 use application::ApplicationInfo;
 use notification::{LogLevel, Notifier};
-use pathdiff::diff_paths;
 use std;
 use std::path::{Path, PathBuf};
 
@@ -73,7 +73,7 @@ impl Context {
 
     pub fn create_marker(&self, dir: &PathBuf, text: &String) -> std::io::Result<()> {
         let ref marker_file_path = {
-            let mut dir = Context::get_absolute_dir(dir)?;
+            let mut dir = fs::get_absolute_dir(dir)?;
             dir.push(&self.config.marker_name);
             dir
         };
@@ -145,7 +145,7 @@ impl Context {
 
     pub fn delete_marker(&self, dir: &PathBuf) -> std::io::Result<()> {
         let ref marker_file_path = {
-            let mut dir = Context::get_absolute_dir(dir)?;
+            let mut dir = fs::get_absolute_dir(dir)?;
             dir.push(&self.config.marker_name);
             dir
         };
@@ -171,40 +171,12 @@ impl Context {
         }
     }
 
-    pub fn get_absolute_dir(dir: &PathBuf) -> std::io::Result<PathBuf> {
-        if dir.is_absolute() {
-            return Ok(dir.clone());
-        }
-        let mut abs_dir = std::env::current_dir()?;
-        abs_dir.push(dir);
-        Ok(abs_dir)
-    }
-
-    pub fn get_relative_dir(dir: &PathBuf, base_dir: &PathBuf) -> Option<PathBuf> {
-        diff_paths(dir, base_dir)
-    }
-
-    pub fn get_relative_dir_to_current_dir(dir: &PathBuf) -> std::io::Result<Option<PathBuf>> {
-        let ref cur_dir = std::env::current_dir()?;
-        match Context::get_relative_dir(dir, cur_dir) {
-            Some(dir) => {
-                let rel_dir = Path::new(".");
-                if dir.iter().next().is_some() {
-                    Ok(Some(rel_dir.join(dir)))
-                } else {
-                    Ok(Some(rel_dir.to_owned()))
-                }
-            }
-            None => Ok(None),
-        }
-    }
-
     pub fn get_root_dir<'a>(
         &self,
         dir: &PathBuf,
         root_dirs: &'a PathList,
     ) -> std::io::Result<Option<&'a PathBuf>> {
-        let dir = Context::get_absolute_dir(dir)?;
+        let dir = fs::get_absolute_dir(dir)?;
         Ok(root_dirs.iter().find(|root_dir| dir.starts_with(root_dir)))
     }
 }
