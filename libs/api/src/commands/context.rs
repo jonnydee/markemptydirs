@@ -89,7 +89,7 @@ impl Context {
         if let Err(error) = self.create_marker_impl(dir, text) {
             self.notifier.error(
                 "create_marker",
-                &format!("{}", fs::to_native(dir)),
+                &fs::to_native(dir),
                 Some(Error::Io(error)),
             )
         }
@@ -111,7 +111,7 @@ impl Context {
         if let Err(error) = self.delete_child_file_impl(file) {
             self.notifier.error(
                 "delete_child_file",
-                &format!("{}", fs::to_native(file)),
+                &fs::to_native(file),
                 Some(Error::Io(error)),
             );
         }
@@ -133,7 +133,7 @@ impl Context {
         if let Err(error) = self.delete_child_dir_impl(dir) {
             self.notifier.error(
                 "delete_child_dir",
-                &format!("{}", fs::to_native(dir)),
+                &fs::to_native(dir),
                 Some(Error::Io(error)),
             );
         }
@@ -157,7 +157,7 @@ impl Context {
         if let Err(error) = self.delete_marker_impl(dir) {
             self.notifier.error(
                 "delete_marker",
-                &format!("{}", fs::to_native(dir)),
+                &fs::to_native(dir),
                 Some(Error::Io(error)),
             );
         }
