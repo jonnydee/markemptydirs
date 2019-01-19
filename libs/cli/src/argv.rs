@@ -4,14 +4,13 @@ use clap::App;
 use clap::ArgMatches;
 use std::path::PathBuf;
 
-enum RunCommand {
+enum CommandExecution {
     DryRun(Box<commands::Command>),
     Run(Box<commands::Command>),
 }
 
-// Import enum values directly into this namespace in order to make code
-// more readable,
-use self::RunCommand::*;
+// Import enum values directly into this namespace in order to make code more readable,
+use self::CommandExecution::*;
 
 pub fn parse_config_and_command() -> Option<(commands::Config, Box<commands::Command>)> {
     let yml = load_yaml!("argv.yml");
@@ -60,7 +59,7 @@ fn parse_config(matches: &ArgMatches, dry_run: bool) -> commands::Config {
     cfg
 }
 
-fn parse_command(matches: &ArgMatches) -> RunCommand {
+fn parse_command(matches: &ArgMatches) -> CommandExecution {
     match matches.subcommand() {
         ("clean", Some(ref matches)) => parse_command_clean(matches),
         ("list", Some(ref matches)) => parse_command_list(matches),
@@ -70,7 +69,7 @@ fn parse_command(matches: &ArgMatches) -> RunCommand {
     }
 }
 
-fn parse_command_clean(matches: &ArgMatches) -> RunCommand {
+fn parse_command_clean(matches: &ArgMatches) -> CommandExecution {
     let mut cmd = Box::new(commands::Clean::new());
 
     if let Some(delete_hook) = matches.value_of("delete-hook") {
@@ -94,7 +93,7 @@ fn parse_command_clean(matches: &ArgMatches) -> RunCommand {
     }
 }
 
-fn parse_command_list(matches: &ArgMatches) -> RunCommand {
+fn parse_command_list(matches: &ArgMatches) -> CommandExecution {
     let mut cmd = Box::new(commands::List::new());
 
     if let Some(filter) = matches.values_of("filter") {
@@ -120,7 +119,7 @@ fn parse_command_list(matches: &ArgMatches) -> RunCommand {
     Run(cmd)
 }
 
-fn parse_command_purge(matches: &ArgMatches) -> RunCommand {
+fn parse_command_purge(matches: &ArgMatches) -> CommandExecution {
     let mut cmd = Box::new(commands::Purge::new());
 
     cmd.dry_run = matches.is_present("dry-run");
@@ -140,7 +139,7 @@ fn parse_command_purge(matches: &ArgMatches) -> RunCommand {
     }
 }
 
-fn parse_command_update(matches: &ArgMatches) -> RunCommand {
+fn parse_command_update(matches: &ArgMatches) -> CommandExecution {
     let mut cmd = Box::new(commands::Update::new());
 
     if let Some(create_hook) = matches.value_of("create-hook") {

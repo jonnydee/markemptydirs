@@ -2,7 +2,6 @@ use super::*;
 
 use rayon::prelude::*;
 
-
 #[derive(PartialEq, Debug)]
 pub struct Update {
     pub create_hook: String,
@@ -20,7 +19,7 @@ impl Update {
             delete_hook: String::new(),
             dry_run: false,
             marker_text: String::new(),
-            root_dirs: default::root_dirs(),
+            root_dirs: Config::default_root_dirs(),
             substitute_variables: true,
         }
     }

@@ -10,12 +10,13 @@ extern crate quick_error;
 
 extern crate rayon;
 
+pub mod application;
+
 pub mod commands;
 
 pub mod fs;
 
 pub mod notification;
-
 
 quick_error! {
     #[derive(Debug)]

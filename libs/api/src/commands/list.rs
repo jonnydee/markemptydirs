@@ -2,7 +2,6 @@ use super::*;
 
 use rayon::prelude::*;
 
-
 #[derive(PartialEq, Debug)]
 pub enum ListFilter {
     Clashing,
@@ -29,26 +28,25 @@ impl List {
     pub fn new() -> List {
         List {
             filter: vec![],
-            root_dirs: default::root_dirs(),
+            root_dirs: Config::default_root_dirs(),
         }
     }
 }
 
 impl Command for List {
     fn execute(&self, ctx: &Context) -> Result<()> {
-        let mut statistics_list: Vec<_> = ctx.crawl_dirs(&self.root_dirs)
+        let mut statistics_list: Vec<_> = ctx
+            .crawl_dirs(&self.root_dirs)
             .into_par_iter()
-            .map(|descr| {
-                ListStatistics {
-                    marker_found: descr.has_marker(),
-                    marker_required: !descr.has_children(),
-                    child_count: descr.get_child_count(),
-                    dir_count: descr.get_sub_directory_count(),
-                    dir: match Context::get_relative_dir_to_current_dir(&descr.dir) {
-                        Ok(Some(dir)) => dir,
-                        _ => descr.dir,
-                    },
-                }
+            .map(|descr| ListStatistics {
+                marker_found: descr.has_marker(),
+                marker_required: !descr.has_children(),
+                child_count: descr.get_child_count(),
+                dir_count: descr.get_sub_directory_count(),
+                dir: match Context::get_relative_dir_to_current_dir(&descr.dir) {
+                    Ok(Some(dir)) => dir,
+                    _ => descr.dir,
+                },
             })
             .collect();
 

@@ -1,6 +1,5 @@
 use super::*;
 
-
 #[derive(PartialEq, Debug)]
 pub struct Purge {
     pub dry_run: bool,
@@ -11,7 +10,7 @@ impl Purge {
     pub fn new() -> Purge {
         Purge {
             dry_run: false,
-            root_dirs: default::root_dirs(),
+            root_dirs: Config::default_root_dirs(),
         }
     }
 }

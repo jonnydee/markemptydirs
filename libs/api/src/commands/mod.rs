@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use Error;
 
 mod clean;
@@ -6,8 +6,6 @@ pub use self::clean::*;
 
 mod context;
 pub use self::context::*;
-
-mod default;
 
 mod list;
 pub use self::list::*;

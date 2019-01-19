@@ -3,7 +3,6 @@ use std::collections::{HashMap, HashSet};
 use std::fs::DirEntry;
 use std::path::PathBuf;
 
-
 pub type DirEntryList = Vec<DirEntry>;
 pub type PathList = Vec<PathBuf>;
 
@@ -21,8 +20,10 @@ impl DirDescriptor {
     where
         F: FnMut(&DirEntry) -> (),
     {
-        self.children.iter().enumerate().filter_map(
-            |(index, entry)| {
+        self.children
+            .iter()
+            .enumerate()
+            .filter_map(|(index, entry)| {
                 if let Some(marker_index) = self.marker_file_child_index {
                     if marker_index == index {
                         return None;
@@ -210,15 +211,17 @@ impl FileSystemCrawler {
             return false;
         }
 
-        if self.exclude_dirs.iter().any(
-            |pattern| dir.ends_with(pattern),
-        )
+        if self
+            .exclude_dirs
+            .iter()
+            .any(|pattern| dir.ends_with(pattern))
         {
             return false;
         }
 
-        self.dereference_symlinks ||
-            !dir.symlink_metadata()
+        self.dereference_symlinks
+            || !dir
+                .symlink_metadata()
                 .and_then(|md| Ok(md.file_type().is_symlink()))
                 .unwrap_or_else(|error| {
                     warn!(target: "FileSystemCrawler", "{}", &error);

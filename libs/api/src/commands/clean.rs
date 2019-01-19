@@ -2,7 +2,6 @@ use super::*;
 
 use rayon::prelude::*;
 
-
 #[derive(PartialEq, Debug)]
 pub struct Clean {
     pub delete_hook: String,
@@ -15,7 +14,7 @@ impl Clean {
         Clean {
             delete_hook: String::new(),
             dry_run: false,
-            root_dirs: default::root_dirs(),
+            root_dirs: Config::default_root_dirs(),
         }
     }
 }

@@ -5,7 +5,6 @@ extern crate clap;
 
 pub mod argv;
 
-
 #[cfg(test)]
 mod tests {
     #[test]

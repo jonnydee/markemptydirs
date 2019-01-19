@@ -6,8 +6,8 @@ pub struct VersionInfo {
     pub suffix: String,
 }
 
-impl fmt::Display for VersionInfo {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl std::fmt::Display for VersionInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}.{}", self.major, self.minor)?;
         if self.bugfix > 0 {
             write!(f, ".{}", self.bugfix)?;
@@ -18,7 +18,6 @@ impl fmt::Display for VersionInfo {
         Ok(())
     }
 }
-
 
 #[derive(Debug)]
 pub struct ApplicationInfo {

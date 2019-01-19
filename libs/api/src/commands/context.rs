@@ -1,14 +1,12 @@
 use super::Error;
 use crate::fs;
-use notification::{LogLevel, Notifier};
 use notification::stdout::Stdout;
+use notification::{LogLevel, Notifier};
 use pathdiff::diff_paths;
 use std;
 use std::path::{Path, PathBuf};
 
-
 pub type PathList = Vec<PathBuf>;
-
 
 #[derive(PartialEq, Debug)]
 pub struct Config {
@@ -21,6 +19,10 @@ pub struct Config {
 }
 
 impl Config {
+    pub fn default_root_dirs() -> PathList {
+        vec![Path::new(".").to_owned()]
+    }
+
     pub fn new() -> Config {
         Config {
             dry_run: false,
@@ -32,7 +34,6 @@ impl Config {
         }
     }
 }
-
 
 #[derive(Debug)]
 pub struct Context {
@@ -49,7 +50,6 @@ impl Context {
             config: config,
         }
     }
-
 
     pub fn crawl_dirs(&self, root_dirs: &PathList) -> fs::crawling::DirDescriptorList {
         let crawler = fs::crawling::FileSystemCrawler {
@@ -75,13 +75,21 @@ impl Context {
         // Write marker to disk.
         self.fsaccess.create_file(marker_file_path, text)?;
 
-        self.notifier.info("create_marker", &format!("Marker created: {:?}", marker_file_path), None);
+        self.notifier.info(
+            "create_marker",
+            &format!("Marker created: {:?}", marker_file_path),
+            None,
+        );
         Ok(())
     }
 
     pub fn create_marker_catched(&self, dir: &PathBuf, text: &String) {
         if let Err(error) = self.create_marker(dir, text) {
-            self.notifier.error("create_marker", &format!("{:?}", dir), Some(Error::Io(error)))
+            self.notifier.error(
+                "create_marker",
+                &format!("{:?}", dir),
+                Some(Error::Io(error)),
+            )
         }
     }
 
@@ -89,13 +97,21 @@ impl Context {
         // Remove file from disk.
         self.fsaccess.remove_file(file)?;
 
-        self.notifier.info("delete_child_file", &format!("Child file deleted: {:?}", file), None);
+        self.notifier.info(
+            "delete_child_file",
+            &format!("Child file deleted: {:?}", file),
+            None,
+        );
         Ok(())
     }
 
     pub fn delete_child_file_catched(&self, file: &PathBuf) {
         if let Err(error) = self.delete_child_file(file) {
-            self.notifier.error("delete_child_file",  &format!("{:?}", file), Some(Error::Io(error)));
+            self.notifier.error(
+                "delete_child_file",
+                &format!("{:?}", file),
+                Some(Error::Io(error)),
+            );
         }
     }
 
@@ -103,13 +119,21 @@ impl Context {
         // Remove dir from disk.
         self.fsaccess.remove_dir_all(dir)?;
 
-        self.notifier.info("delete_child_dir", &format!("Child dir deleted: {:?}", dir), None);
+        self.notifier.info(
+            "delete_child_dir",
+            &format!("Child dir deleted: {:?}", dir),
+            None,
+        );
         Ok(())
     }
 
     pub fn delete_child_dir_catched(&self, dir: &PathBuf) {
         if let Err(error) = self.delete_child_dir(dir) {
-            self.notifier.error("delete_child_dir", &format!("{:?}", dir), Some(Error::Io(error)));
+            self.notifier.error(
+                "delete_child_dir",
+                &format!("{:?}", dir),
+                Some(Error::Io(error)),
+            );
         }
     }
 
@@ -123,13 +147,21 @@ impl Context {
         // Remove marker from disk.
         self.fsaccess.remove_file(marker_file_path)?;
 
-        self.notifier.info("delete_marker", &format!("Marker deleted: {:?}", marker_file_path), None);
+        self.notifier.info(
+            "delete_marker",
+            &format!("Marker deleted: {:?}", marker_file_path),
+            None,
+        );
         Ok(())
     }
 
     pub fn delete_marker_catched(&self, dir: &PathBuf) {
         if let Err(error) = self.delete_marker(dir) {
-            self.notifier.error("delete_marker", &format!("{:?}", dir), Some(Error::Io(error)));
+            self.notifier.error(
+                "delete_marker",
+                &format!("{:?}", dir),
+                Some(Error::Io(error)),
+            );
         }
     }
 
@@ -170,7 +202,7 @@ impl Context {
         Ok(root_dirs.iter().find(|root_dir| dir.starts_with(root_dir)))
     }
 
-    fn create_fs_access(config: &Config) -> Box<fs::access::FileSystemAccess>{
+    fn create_fs_access(config: &Config) -> Box<fs::access::FileSystemAccess> {
         if config.dry_run {
             Box::new(fs::access::DryRunFileSystemAccess {})
         } else {
@@ -181,5 +213,4 @@ impl Context {
     fn create_notifier(log_level: LogLevel) -> Box<Notifier> {
         Box::new(Stdout::new(log_level))
     }
-
 }

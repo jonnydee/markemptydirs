@@ -6,7 +6,6 @@ extern crate std_logger;
 use api::commands;
 use cli::argv;
 
-
 fn main() {
     std_logger::init();
 
