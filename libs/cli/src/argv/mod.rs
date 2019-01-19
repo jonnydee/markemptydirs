@@ -14,7 +14,7 @@ pub trait CommandParser {
     fn parse(matches: &ArgMatches) -> Option<commands::Execution>;
 }
 
-pub fn create_session() -> Option<application::Session> {
+pub fn create_session(appinfo: application::ApplicationInfo) -> Option<application::Session> {
     let yml = load_yaml!("argv.yml");
     let app = clap::App::from_yaml(yml);
     let matches = app.get_matches();
@@ -25,7 +25,7 @@ pub fn create_session() -> Option<application::Session> {
 
     if let Some(cfg) = commands::Config::parse(&matches) {
         if let Some(exec) = commands::Command::parse(&matches) {
-            return Some(application::Session::new(cfg, exec));
+            return Some(application::Session::new(appinfo, cfg, exec));
         }
     }
 

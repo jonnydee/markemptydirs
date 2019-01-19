@@ -1,5 +1,6 @@
 use super::Error;
 use crate::fs;
+use application::ApplicationInfo;
 use notification::stdout::Stdout;
 use notification::{LogLevel, Notifier};
 use pathdiff::diff_paths;
@@ -35,14 +36,16 @@ impl Config {
 
 #[derive(Debug)]
 pub struct Context {
+    pub appinfo: ApplicationInfo,
     pub config: Config,
     pub fsaccess: Box<fs::access::FileSystemAccess>,
     pub notifier: Box<Notifier>,
 }
 
 impl Context {
-    pub fn new(config: Config, dry_run: bool) -> Context {
+    pub fn new(appinfo: ApplicationInfo, config: Config, dry_run: bool) -> Context {
         Context {
+            appinfo: appinfo,
             notifier: Context::create_notifier(config.log_level),
             fsaccess: Context::create_fs_access(dry_run),
             config: config,
