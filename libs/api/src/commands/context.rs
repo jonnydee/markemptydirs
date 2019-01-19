@@ -71,12 +71,8 @@ impl Context {
             .collect()
     }
 
-    pub fn create_marker(&self, dir: &PathBuf, text: &String) -> std::io::Result<()> {
-        let ref marker_file_path = {
-            let mut dir = fs::get_absolute_dir(dir)?;
-            dir.push(&self.config.marker_name);
-            dir
-        };
+    fn create_marker_impl(&self, dir: &PathBuf, text: &String) -> std::io::Result<()> {
+        let ref marker_file_path = self.get_marker_file_path(dir)?;
 
         // Write marker to disk.
         self.fsaccess.create_file(marker_file_path, text)?;
@@ -89,8 +85,8 @@ impl Context {
         Ok(())
     }
 
-    pub fn create_marker_catched(&self, dir: &PathBuf, text: &String) {
-        if let Err(error) = self.create_marker(dir, text) {
+    pub fn create_marker(&self, dir: &PathBuf, text: &String) {
+        if let Err(error) = self.create_marker_impl(dir, text) {
             self.notifier.error(
                 "create_marker",
                 &format!("{:?}", dir),
@@ -99,7 +95,7 @@ impl Context {
         }
     }
 
-    pub fn delete_child_file(&self, file: &PathBuf) -> std::io::Result<()> {
+    fn delete_child_file_impl(&self, file: &PathBuf) -> std::io::Result<()> {
         // Remove file from disk.
         self.fsaccess.remove_file(file)?;
 
@@ -111,8 +107,8 @@ impl Context {
         Ok(())
     }
 
-    pub fn delete_child_file_catched(&self, file: &PathBuf) {
-        if let Err(error) = self.delete_child_file(file) {
+    pub fn delete_child_file(&self, file: &PathBuf) {
+        if let Err(error) = self.delete_child_file_impl(file) {
             self.notifier.error(
                 "delete_child_file",
                 &format!("{:?}", file),
@@ -121,7 +117,7 @@ impl Context {
         }
     }
 
-    pub fn delete_child_dir(&self, dir: &PathBuf) -> std::io::Result<()> {
+    fn delete_child_dir_impl(&self, dir: &PathBuf) -> std::io::Result<()> {
         // Remove dir from disk.
         self.fsaccess.remove_dir_all(dir)?;
 
@@ -133,8 +129,8 @@ impl Context {
         Ok(())
     }
 
-    pub fn delete_child_dir_catched(&self, dir: &PathBuf) {
-        if let Err(error) = self.delete_child_dir(dir) {
+    pub fn delete_child_dir(&self, dir: &PathBuf) {
+        if let Err(error) = self.delete_child_dir_impl(dir) {
             self.notifier.error(
                 "delete_child_dir",
                 &format!("{:?}", dir),
@@ -143,12 +139,8 @@ impl Context {
         }
     }
 
-    pub fn delete_marker(&self, dir: &PathBuf) -> std::io::Result<()> {
-        let ref marker_file_path = {
-            let mut dir = fs::get_absolute_dir(dir)?;
-            dir.push(&self.config.marker_name);
-            dir
-        };
+    fn delete_marker_impl(&self, dir: &PathBuf) -> std::io::Result<()> {
+        let ref marker_file_path = self.get_marker_file_path(dir)?;
 
         // Remove marker from disk.
         self.fsaccess.remove_file(marker_file_path)?;
@@ -161,8 +153,8 @@ impl Context {
         Ok(())
     }
 
-    pub fn delete_marker_catched(&self, dir: &PathBuf) {
-        if let Err(error) = self.delete_marker(dir) {
+    pub fn delete_marker(&self, dir: &PathBuf) {
+        if let Err(error) = self.delete_marker_impl(dir) {
             self.notifier.error(
                 "delete_marker",
                 &format!("{:?}", dir),
@@ -178,5 +170,11 @@ impl Context {
     ) -> std::io::Result<Option<&'a PathBuf>> {
         let dir = fs::get_absolute_dir(dir)?;
         Ok(root_dirs.iter().find(|root_dir| dir.starts_with(root_dir)))
+    }
+
+    fn get_marker_file_path(&self, dir: &PathBuf) -> std::io::Result<PathBuf> {
+        let mut dir = fs::get_absolute_dir(dir)?;
+        dir.push(&self.config.marker_name);
+        Ok(dir)
     }
 }

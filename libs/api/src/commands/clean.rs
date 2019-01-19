@@ -26,7 +26,7 @@ impl Command for Clean {
         // Delete all markers.
         descr_list.par_iter().for_each(|descr| {
             if descr.has_marker() {
-                ctx.delete_marker_catched(&descr.dir);
+                ctx.delete_marker(&descr.dir);
             }
         });
 

@@ -32,14 +32,14 @@ impl Command for Update {
         // Delete markers.
         descr_list.par_iter().for_each(|descr| {
             if descr.has_marker() && descr.has_children() {
-                ctx.delete_marker_catched(&descr.dir);
+                ctx.delete_marker(&descr.dir);
             }
         });
 
         // Create markers.
         descr_list.par_iter().for_each(|descr| {
             if !descr.has_marker() && !descr.has_children() {
-                ctx.create_marker_catched(&descr.dir, &self.marker_text);
+                ctx.create_marker(&descr.dir, &self.marker_text);
             }
         });
 
