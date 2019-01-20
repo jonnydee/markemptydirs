@@ -50,6 +50,10 @@ mod test_Clean {
     pub fn execute() {
         let ctx = TestContext::new(|_| DirDescriptorList::new());
         let sut = Clean::new();
+        
         sut.execute(&ctx).unwrap();
+
+        assert_eq!(0, ctx.get_markers_created().len());
+        assert_eq!(0, ctx.get_markers_deleted().len());
     }
 }
