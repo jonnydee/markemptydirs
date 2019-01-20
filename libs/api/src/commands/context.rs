@@ -1,13 +1,10 @@
-use super::Error;
+use super::{Error, Path, PathBuf, PathList};
 use crate::fs;
 use crate::fs::{DirDescriptorList, FileSystemAccess, FileSystemCrawler};
 use application::ApplicationInfo;
 use notification::{LogLevel, MessageLength, Notifier};
 use std;
 use std::fmt::Debug;
-use std::path::{Path, PathBuf};
-
-pub type PathList = Vec<PathBuf>;
 
 #[derive(PartialEq, Debug)]
 pub struct Config {

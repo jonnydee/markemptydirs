@@ -1,10 +1,8 @@
+use super::*;
 use rayon::prelude::*;
 use std::collections::{HashMap, HashSet};
-use std::fs::DirEntry;
-use std::path::PathBuf;
 
 pub type DirEntryList = Vec<DirEntry>;
-pub type PathList = Vec<PathBuf>;
 
 #[derive(Debug)]
 pub struct DirDescriptor {

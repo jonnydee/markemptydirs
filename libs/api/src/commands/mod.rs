@@ -1,4 +1,5 @@
-use std::path::PathBuf;
+pub use fs::{Path, PathBuf, PathList};
+
 use Error;
 
 mod clean;
@@ -15,8 +16,6 @@ pub use self::purge::*;
 
 mod update;
 pub use self::update::*;
-
-pub type PathList = Vec<PathBuf>;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
