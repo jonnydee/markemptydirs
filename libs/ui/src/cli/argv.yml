@@ -1,6 +1,7 @@
-name: MarkEmptyDirs
+name: markemptydirs
 author: Johann Duscher <jonny.dee@posteo.net>
 about: Manage marker files marking empty directories
+version: 0.1.0
 args:
     - exclude-dirs:
         help: Exclude specified directories
