@@ -1,3 +1,3 @@
 extern crate api;
 
-extern crate cli;
+extern crate ui;

@@ -1,10 +1,10 @@
 extern crate api;
 extern crate clap;
-extern crate cli;
 extern crate std_logger;
+extern crate ui;
 
 use api::application::{ApplicationInfo, VersionInfo};
-use cli::argv::create_session;
+use ui::cli::create_session;
 
 fn main() {
     std_logger::init();

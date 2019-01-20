@@ -60,7 +60,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "cli"
+name = "ui"
 version = "0.1.0"
 dependencies = [
  "api 0.1.0",

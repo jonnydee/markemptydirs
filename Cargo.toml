@@ -6,8 +6,8 @@ authors = ["Johann Duscher <jonny.dee@posteo.net>"]
 [dependencies.api]
 path = "libs/api"
 
-[dependencies.cli]
-path = "libs/cli"
+[dependencies.ui]
+path = "libs/ui"
 
 [dependencies]
 clap = "*"

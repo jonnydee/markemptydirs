@@ -1,5 +1,5 @@
 [package]
-name = "cli"
+name = "ui"
 version = "0.1.0"
 authors = ["Jonny Dee <jonny.dee@gmx.net>"]
 

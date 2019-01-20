@@ -102,14 +102,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cli"
-version = "0.1.0"
-dependencies = [
- "api 0.1.0",
- "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "crossbeam-deque"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -178,8 +170,8 @@ version = "0.1.0"
 dependencies = [
  "api 0.1.0",
  "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "cli 0.1.0",
  "std-logger 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ui 0.1.0",
 ]
 
 [[package]]
@@ -308,6 +300,14 @@ dependencies = [
  "libc 0.2.47 (registry+https://github.com/rust-lang/crates.io-index)",
  "redox_syscall 0.1.50 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "ui"
+version = "0.1.0"
+dependencies = [
+ "api 0.1.0",
+ "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
